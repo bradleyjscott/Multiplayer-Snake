@@ -7,7 +7,7 @@ This game has single and two player versions, so see how long you can last on yo
 
 This is the first computer game I have created, so I would genuinely love to hear your experience and feedback. Seriously, even if it's later then 2050, shoot me a message, I'll be happy to hear that you played this game!
 
-Send me a screenshot of your high score to have it officially added to the high scores!
+Save a 'Spin-off' on the home screen, or send me a screenshot, when you get a high score to have it officially added to the high scores!
 
 There are probably still bugs and incorrect behaviour in this code. If you find anything that isn't working or seems to be working incorrectly, please let me know as much as you can about it; that will help me improve this game.
 
@@ -33,6 +33,11 @@ Updates and Fixes:
 2020 Jul 09
 - Fixed issue with two player snake head orientation on two player game reset.
 - Improved 'Paused' flag appearance.
+
+2020 Jul 10
+- Fixed one player head orientation during top and bottom wall collision when right side head is showing.
+- Fixed player one wall collision failure in two player mode.
+- Space no longer starts game when entering names in two player mode (can use names with spaces).
 */
 noStroke();
 noCursor();
@@ -806,6 +811,7 @@ var tie = false;
     var name_text_size = 0;
     var blanks = 0;
     var initial_letters;
+    var cheating3 = false; // Hidden here
 }
 //Guide screen variables
 {
@@ -1229,6 +1235,10 @@ var reset_one_player_snake = function() {
     place = 0;
     paused = false;
     
+    if(score !== 0) {
+        cheating3 = true;
+        
+    }
 };
 
 //Reset the home snake variables
@@ -1439,12 +1449,11 @@ var add_high_score = function() {
     }
 };
 
-//Add letters to the srting when entering two player names
+//Add letters to the string when entering two player names
 var add_name_letter = function(name) {
     var added_letter = '';
     
     if(pressed_key === 48) {
-        
         added_letter = '0';
         
     }
@@ -1744,6 +1753,10 @@ var add_name_letter = function(name) {
             
         }
     }
+    if(pressed_key === 32) {
+        added_letter = ' ';
+        
+    }
     if(pressed_key === 8) {
         backspace = true;
         
@@ -1840,7 +1853,7 @@ var home_screen = function() {
     fill(0, 0, 0);
     
     //Display differently when cheating
-    if((cheating || cheating2) && !override_cheat) {
+    if(((cheating || cheating2) && !override_cheat) || cheating3) {
         rect(138, 127, 124, 1.5);
         
     } else {
@@ -2902,7 +2915,7 @@ var one_player_screen = function() {
             if(right) {
                 rotation = -90;
                 
-            } else {
+            } else if(left) {
                 rotation = 90;
                 
             }
@@ -2914,7 +2927,7 @@ var one_player_screen = function() {
             if(right) {
                 rotation = 90;
                 
-            } else {
+            } else if(left) {
                 rotation = -90;
                 
             }
@@ -2972,7 +2985,7 @@ var two_player_screen = function() {
             textSize(30);
             text("Press space to start", 200, 100);
             
-            if(pressed_key === 32) {
+            if(pressed_key === 32 && !enter_names) {
                 before_start = false;
                 paused = false;
                 
@@ -3153,20 +3166,24 @@ var two_player_screen = function() {
             
     }
     
-    
     //Wall crashing
-    if(wall_collisions && ((two_player_snake1[0].position % 40 === 1) && key_codes[0] === 65 || (two_player_snake1[0].position % 40 === 0) && key_codes[0] === 68 || (Math.ceil(two_player_snake1[0].position / 40) === 3) && key_codes[0] === 87 || (Math.ceil(two_player_snake1[0].position / 40) === 40) && key_codes[0] === 83)) {
+    if(wall_collisions && ((two_player_snake1[0].position % 40 === 1) && (key_codes[0] === 65 || key_codes[0] === undefined) || (two_player_snake1[0].position % 40 === 0) && (key_codes[0] === 68 || key_codes[0] === undefined) || (Math.ceil(two_player_snake1[0].position / 40) === 3) && (key_codes[0] === 87 || key_codes[0] === undefined) || (Math.ceil(two_player_snake1[0].position / 40) === 40) && (key_codes[0] === 83 || key_codes[0] === undefined))) {
         game_over = true;
-        player_two_win = true;
+        if(!player_one_win) {
+            player_two_win = true;
+            
+        }
         snake_one_crash = true;
         two_player_snake1[0].draw_eyes = false;
         wall_crash = true;
         
     }
-    //Not sure why I need extra !player_two_key_pressed check here
-    if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && (snake_two_key_codes[0] === 37 || !player_two_key_pressed) || (two_player_snake2[0].position % 40 === 0) && snake_two_key_codes[0] === 39 || (Math.ceil(two_player_snake2[0].position / 40) === 3) && snake_two_key_codes[0] === 38 || (Math.ceil(two_player_snake2[0].position / 40) === 40) && snake_two_key_codes[0] === 40)) {
+    if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && (snake_two_key_codes[0] === 37 || snake_two_key_codes[0] === undefined) || (two_player_snake2[0].position % 40 === 0) && (snake_two_key_codes[0] === 39 || snake_two_key_codes[0] === undefined) || (Math.ceil(two_player_snake2[0].position / 40) === 3) && (snake_two_key_codes[0] === 38 || snake_two_key_codes[0] === undefined) || (Math.ceil(two_player_snake2[0].position / 40) === 40) && (snake_two_key_codes[0] === 40 || snake_two_key_codes[0] === undefined))) {
         game_over = true;
-        player_one_win = true;
+        if(!player_two_win) {
+            player_one_win = true;
+            
+        }
         snake_two_crash = true;
         two_player_snake2[0].draw_eyes = false;
         wall_crash = true;
@@ -3301,7 +3318,7 @@ var two_player_screen = function() {
     }
     
     //Do when paused
-    if(paused) {
+    if(paused && !before_start) {
         update_timer = millis();
         fill(115, 115, 115, 180);
         rect(100, 60, 200, 62, 15);
@@ -3417,6 +3434,7 @@ var enter_names_screen = function() {
 
     //Close enter names screen when enter pressed
     if(continue_pressed) {
+        pressed_key = 0;
         
         if(player_one_name_text !== "") {
             player_one_name = player_one_name_text;
