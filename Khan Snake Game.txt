@@ -1,3 +1,6 @@
+/*
+
+*/
 noStroke();
 noCursor();
 
@@ -9,8 +12,6 @@ var paused = false;
 var shift_held = false;
 var player_one_key_pressed = false;
 var player_two_key_pressed = false;
-
-var scroll_button_pressed = false;
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
@@ -54,7 +55,6 @@ var mouse_released = false;
 mouseReleased = function() {
     
     if(mouseButton === LEFT) {
-        scroll_button_pressed = false;
         mouse_released = true;
         
     }
@@ -107,7 +107,7 @@ var one_player_pressed = false; //false
 var two_player_pressed = false;
 var two_player = false; //false
 var settings = false; //false
-var guide = true; //false
+var guide = false; //false
 
 //Settings
 var back = false; //And Guide
@@ -128,12 +128,36 @@ var initials_pressed = false;
 
 //Enter names
 var continue_pressed = false;
-
-
 var enter_player_one_name = false;
 var enter_player_two_name = false;
 
+//Guide
+var scroll_button_pressed = false;
+var click_y_position = 0;
+
 Button.prototype.draw = function () {
+    
+    if(this.Text === "Scroll" && mouseIsPressed) {
+        scroll_button_pressed = true;
+        this.R2 = 120;
+        this.G2 = 120;
+        this.B2 = 120;
+        
+    } else {
+        scroll_button_pressed = false;
+        
+        if(!mouseIsPressed) {
+            click_y_position = mouseY;
+            
+        }
+        
+        if(this.Text === "Scroll") {
+            this.R2 = 150;
+            this.G2 = 150;
+            this.B2 = 150;
+            
+        }
+    }
     
     if (mouseX >= this.XPosition && mouseX <= this.XPosition + this.Width && mouseY >= this.YPosition && mouseY <= this.YPosition + this.Height) {
         over_back = true;
@@ -150,12 +174,7 @@ Button.prototype.draw = function () {
             rect(this.XPosition, this.YPosition, this.Width, this.Height);
             fill(this.R2, this.G2, this.B2);
             rect(this.XPosition + 1.5, this.YPosition + 1.5, this.Width - 4, this.Height - 4);
-            
-            if(this.Text === "Scroll" && !mouse_released) {
-                scroll_button_pressed = true;
-                
-            }
-        }
+        } 
         
         var button_text = this.Text;
         if(mouse_released) {
@@ -177,6 +196,7 @@ Button.prototype.draw = function () {
                 
             } else if(button_text === "Guide") {
                 guide = true;
+                home = false;
                 
             } else if(button_text === "Back") {
                 home = true;
@@ -590,6 +610,9 @@ BodySegment.prototype.draw = function() {
     
     var test_timer = millis();
     var timed_time = 0;
+    var cheating = false;
+    var override_cheat = false;
+    var fill_white = false;
     
 }
 //Settings screen variables
@@ -737,6 +760,8 @@ var tie = false;
     var initials_button = new Button (155, 245, 90, 44, 255, 255, 255, 255, 255, 255, "Initials", 0, 47, 29);
     var Is = 0;
     var enter_pressed = false;
+    var cheating2 = false; // Hidden here
+    var check_cheating_initials = ["BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
     
 }
 //Guide screen variables
@@ -787,6 +812,7 @@ var tie = false;
 
         ];
         var scroll_button = new Button (350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136, 170, 170, 170, 150, 150, 150, "Scroll", 0, 6, 24);
+        var old_Y_position = 0;
 }
 
 //Other functions
@@ -801,21 +827,6 @@ var game_grid = function() {
     }
     //Horizontal
     for(var i = 2; i < 400; i++) {
-        line(0,i*10,400,i*10);
-    }
-    noStroke();
-};
-
-//Home grid
-var home_grid = function() {
-    //grid
-    stroke(121, 156, 26);
-    //Virtical
-    for(var i = 0; i < 400; i++) {
-        line(i*10,0,i*10,400);
-    }
-    //Horizontal
-    for(var i = 0; i < 400; i++) {
         line(0,i*10,400,i*10);
     }
     noStroke();
@@ -1747,6 +1758,9 @@ var reset_two_player_snakes = function() {
     player_one_win = false;
     player_two_win = false;
     tie = false;
+    end_delay = -40;
+    player_one_key_pressed = false;
+    player_two_key_pressed = false;
     
 };
 }
@@ -1769,7 +1783,14 @@ var home_screen = function() {
     textSize(18);
     text("High Scores", 151, 120);
     fill(0, 0, 0);
-    rect(120, 127, 160, 2);
+    
+    if((cheating || cheating2) && !override_cheat) {
+        rect(138, 127, 124, 1.5);
+        
+    } else {
+        rect(130, 127, 140, 1.5);
+        
+    }
     fill(235, 205, 12);
     textSize(12);
     
@@ -1838,6 +1859,15 @@ var home_screen = function() {
         
     }
     
+    //Check for cheating
+    for(var i = 0; i < high_score_initials.length; i++) {
+        
+        if(high_score_initials[i] !== check_cheating_initials[i]) {
+            cheating2 = true;
+            
+        }
+    }
+    
     if(home_snake_segments[0].position === 673) {
         easter_eat = true;
         
@@ -1880,7 +1910,56 @@ var home_screen = function() {
         
     }
     
+    if(high_score_initials[0] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[1] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[2] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[3] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[4] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[5] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[6] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[7] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[8] !== "BJS") {
+        cheating = true;
+        
+    }
+    if(high_score_initials[9] !== "BJS") {
+        cheating = true;
+        
+    }
     
+    for(var i = 0; i < high_score_initials.length; i++) {
+        
+        if(high_score_initials[i].length !== 3 && !override_cheat) {
+            cheating = true;
+            fill(255, 255, 255);
+            rect(0, 0, 400, 400);
+            
+        }
+    }
 };
 
 var settings_screen = function() {
@@ -2578,6 +2657,9 @@ var settings_screen = function() {
 
 var one_player_screen = function() {
     background (32, 138, 35);
+    
+    //game_grid(); // 40 by 38 spaces
+    
     fill(0, 0, 0);
     rect(0, 0, 400, 20);
     fill(235, 205, 12);
@@ -2777,6 +2859,9 @@ var one_player_screen = function() {
 
 var two_player_screen = function() {
     background (32, 138, 35);
+    
+    //game_grid(); // 40 by 38 spaces
+    
     fill(0, 0, 0);
     rect(0, 0, 400, 20);
     fill(235, 205, 12);
@@ -3003,7 +3088,8 @@ var two_player_screen = function() {
         
     }
     
-    if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && snake_two_key_codes[0] === 37 || (two_player_snake2[0].position % 40 === 0) && snake_two_key_codes[0] === 39 || (Math.ceil(two_player_snake2[0].position / 40) === 3) && snake_two_key_codes[0] === 38 || (Math.ceil(two_player_snake2[0].position / 40) === 40) && snake_two_key_codes[0] === 40)) {
+    //Not sure why I need extra !player_two_key_pressed check here
+    if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && (snake_two_key_codes[0] === 37 || !player_two_key_pressed) || (two_player_snake2[0].position % 40 === 0) && snake_two_key_codes[0] === 39 || (Math.ceil(two_player_snake2[0].position / 40) === 3) && snake_two_key_codes[0] === 38 || (Math.ceil(two_player_snake2[0].position / 40) === 40) && snake_two_key_codes[0] === 40)) {
         game_over = true;
         player_one_win = true;
         snake_two_crash = true;
@@ -3264,6 +3350,7 @@ var enter_names_screen = function() {
 
 var end_game_screen = function() {
     end_delay++;
+    override_cheat = true;
     
     if(end_delay > delay_time) {
         both_crash = true;
@@ -3440,8 +3527,6 @@ var end_game_screen = function() {
 var guide_screen = function() {
     background(186, 163, 108);
     
-    text_y_position = 115 + scroll_value * 8;
-    
     textAlign(CENTER);
     textSize(30);
     text("How To Play:", 200, text_y_position);
@@ -3506,29 +3591,43 @@ var guide_screen = function() {
     fill(170, 170, 170);
     //rect(350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136);
     
+    scroll_button.draw();
+    
     if(scroll_button_pressed) {
-        scroll_button.R2 = 120;
-        scroll_button.G2 = 120;
-        scroll_button.B2 = 120;
+        if(scroll_button.YPosition >= 82 && scroll_button.YPosition <= 223) {
+            scroll_button.YPosition = old_Y_position - (click_y_position - mouseY);
+            text_y_position = (11229 / 14) - ((285 / 70) * scroll_button.YPosition) - 353;
+            scroll_value = (text_y_position - 115) / 8;
+            
+        }
+        if(scroll_button.YPosition < 82) {
+            scroll_button.YPosition = 82;
+            text_y_position = 115;
+            
+        }
+        if(scroll_button.YPosition >= 223) {
+            scroll_button.YPosition = 223;
+            text_y_position = -461;
+            
+        }
         
     } else {
-        scroll_button.R1 = 170;
-        scroll_button.G1 = 170;
-        scroll_button.B1 = 170;
-        scroll_button.R2 = 150;
-        scroll_button.G2 = 150;
-        scroll_button.B2 = 150;
+        old_Y_position = scroll_button.YPosition;
+        text_y_position = 115 + scroll_value * 8;
         scroll_button.YPosition = 82 - ((70 / 285) * (text_y_position - 115));
         
     }
     
-    scroll_button.draw();
-    
-    //Delete
-    fill(255, 0, 0);
-    textSize(20);
-    text(scroll_value, 345, 40);
-    
+    if(text_y_position > 115) {
+        scroll_button.YPosition = 82;
+        text_y_position = 115;
+        
+    }
+    if(text_y_position < -461) {
+        scroll_button.YPosition = 223;
+        text_y_position = -461;
+        
+    }
 };
 
 var draw = function() {
@@ -3569,7 +3668,5 @@ var draw = function() {
         
     }
     mouse_released = false;
-    //game_grid(); // 40 by 38 spaces
-    //home_grid(); //40 by 40 spaces
     
 };
