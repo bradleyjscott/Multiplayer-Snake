@@ -14,6 +14,13 @@ There are probably still bugs and incorrect behaviour in this code. If you find 
 I hope you enjoy playing this game as much as I did making it!
 Happy slithering!
 */
+
+/*
+Update Notes:
+
+2020 May 30
+Fixed tie in two player when both players crash and one is longer than the other.
+*/
 noStroke();
 noCursor();
 
@@ -601,8 +608,8 @@ BodySegment.prototype.draw = function() {
 //Home screen variables
 {
     //Highest = 15190
-    var high_score_initials = ["JOE", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
-    var high_scores = [1030, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var high_score_initials = ["ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "BJS"];
+    var high_scores = [1150, 1030, 560, 450, 450, 430, 320, 220, 130, 0];
     var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
     var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
@@ -785,7 +792,7 @@ var tie = false;
     var Is = 0;
     var enter_pressed = false;
     var cheating2 = false; // Hidden here
-    var check_cheating_initials = ["JOE", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
+    var check_cheating_initials = ["ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "BJS"];
     
 }
 //Guide screen variables
@@ -1959,39 +1966,39 @@ var home_screen = function() {
     }
     
     //Check for cheating
-    if(high_score_initials[0] !== "JOE") {
+    if(high_score_initials[0] !== "ZOW") {
         cheating = true;
         
     }
-    if(high_score_initials[1] !== "BJS") {
+    if(high_score_initials[1] !== "JOE") {
         cheating = true;
         
     }
-    if(high_score_initials[2] !== "BJS") {
+    if(high_score_initials[2] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[3] !== "BJS") {
+    if(high_score_initials[3] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[4] !== "BJS") {
+    if(high_score_initials[4] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[5] !== "BJS") {
+    if(high_score_initials[5] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[6] !== "BJS") {
+    if(high_score_initials[6] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[7] !== "BJS") {
+    if(high_score_initials[7] !== "AMK") {
         cheating = true;
         
     }
-    if(high_score_initials[8] !== "BJS") {
+    if(high_score_initials[8] !== "AMK") {
         cheating = true;
         
     }
@@ -3237,11 +3244,25 @@ var two_player_screen = function() {
         
     }
     
-    //Find a tie when both players win
+    //Find who wins when both snakes crash
     if(player_one_win && player_two_win) {
-        player_one_win = false;
-        player_two_win = false;
-        tie = true;
+        
+        if(two_player_snake1.length > two_player_snake2.length) {
+            player_one_win = true;
+            player_two_win = false;
+            tie = false;
+            
+        } else if (two_player_snake2.length > two_player_snake1.length) {
+            player_one_win = false;
+            player_two_win = true;
+            tie = false;
+            
+        } else {
+            player_one_win = false;
+            player_two_win = false;
+            tie = true;
+            
+        }
 
     }
     
