@@ -5,9 +5,21 @@ noCursor();
 {
 var key_pressed = false;
 var pressed_key = 39;
+var paused = false;
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
+    
+    if(keyCode === 32) {
+        if(!paused) {
+            paused = true;
+            
+        } else {
+            paused = false;
+            
+        }
+        
+    }
     
 };
 
@@ -44,9 +56,9 @@ var Button = function (XPosition, YPosition, Width, Height, R1, G1, B1, R2, G2, 
 };
 
 //Home
-var home = true; //true
+var home = false; //true
 var one_player_pressed = false; //false
-var two_player = false; //false
+var two_player = true; //false
 var settings = false; //false
 var guide = false; //false
 
@@ -98,6 +110,7 @@ Button.prototype.draw = function () {
                 
             } else if(button_text === "2 Player") {
                 two_player = true;
+                home = false;
                 
             } else if(button_text === "Settings") {
                 settings = true;
@@ -204,8 +217,11 @@ Button.prototype.draw = function () {
 //Snake Segments
 {
 var side = "Right";
+var P2_side = "Right";
 var rotation = 0;
+var P2_rotation = 0;
 var eyes = true;
+var P2_eyes = true;
 
 var Head = function(position, colour, draw_eyes) {
     this.position = position;
@@ -535,12 +551,26 @@ BodySegment.prototype.draw = function() {
     
  }
  var random_number = floor(random(81, available_positions.length + 0.9));
- var food = new BodySegment(random_number, "Food");
+ var food = new BodySegment(available_positions[random_number], "Food");
  var eat = false;
  var old_tail_position = 818;
  var add_length = false;
  var perfect_game = false;
  
+}
+//Two player variables
+{
+var player_one_name = "Player one";
+var player_two_name = "Player two";
+var two_player_snake1 = [];
+two_player_snake1.push(new Head(812, player1_colour, true));
+two_player_snake1.push(new BodySegment(811, player1_colour));
+two_player_snake1.push(new BodySegment(810, player1_colour));
+var two_player_snake2 = [];
+two_player_snake2.push(new Head(829, player2_colour, true));
+two_player_snake2.push(new BodySegment(830, player2_colour));
+two_player_snake2.push(new BodySegment(831, player2_colour));
+    
 }
 //End game variables
 {
@@ -858,6 +888,7 @@ var reset_one_player_snake = function() {
     initials_text = "";
     initials = ["  ", "  ", "  "];
     place = 0;
+    paused = false;
     
 };
 
@@ -1896,8 +1927,19 @@ var one_player_screen = function() {
         
     }
     
+    if(paused) {
+        update_timer = millis();
+        fill(255, 255, 255);
+        textAlign(CENTER);
+        text("PAUSED", 200, 15);
+        textAlign(LEFT);
+        
+    }
+    
     if(one_player_snake.size === 1520) {
         perfect_game = true;
+        player1_snake_stopped = true;
+        game_over = true;
         
     }
     
@@ -1967,6 +2009,20 @@ var one_player_screen = function() {
         }
     }
     
+    
+    //See available spaces
+    /*
+    for(var i = 0; i < available_positions.length; i++) {
+        var x_position = ((available_positions[i] - 1) % 40) * 10 + 5;
+        var y_position = Math.ceil(available_positions[i] / 40 - 1) * 10 + 5;
+      
+        fill(110, 86, 14);
+      
+        ellipse (x_position, y_position , 10, 10);
+        
+    }
+    */
+    
     for(var i = one_player_snake.length - 1; i >= 0; i--) {
         
         if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
@@ -1993,7 +2049,7 @@ var one_player_screen = function() {
     if(eat) {
         eat = false;
         add_length = true;
-        food.position = random_number;
+        food.position = available_positions[random_number];
         old_tail_position = one_player_snake[one_player_snake.length - 1].position;
         
         if(difficulty === "Easy") {
@@ -2008,17 +2064,6 @@ var one_player_screen = function() {
         }
         
     }
-    
-    /*
-    for(var i = 0; i < available_positions.length; i++) {
-        var x_position = ((available_positions[i] - 1) % 40) * 10 + 5;
-        var y_position = Math.ceil(available_positions[i] / 40 - 1) * 10 + 5;
-      
-        fill(110, 86, 14);
-      
-        ellipse (x_position, y_position , 10, 10);
-        
-    } */
     
     food.draw();
     
@@ -2061,6 +2106,48 @@ var one_player_screen = function() {
             
             
         }
+        
+    }
+    
+};
+
+var two_player_screen = function() {
+    background (32, 138, 35);
+    fill(0, 0, 0);
+    rect(0, 0, 400, 20);
+    fill(235, 205, 12);
+    textSize(12);
+    text(player_one_name + "'s Length: " + two_player_snake1.length, 5, 15);
+    textAlign(RIGHT);
+    text(player_two_name + "'s Length: ", 395, 15);
+    textAlign(LEFT);
+    
+    for(var i = two_player_snake1.length - 1; i >= 0; i--) {
+        
+        /*
+        if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
+            one_player_crash = true;
+            player1_snake_stopped = true;
+            
+        }
+        */
+        
+        two_player_snake1[i].draw();
+        two_player_snake2[i].draw();
+        
+    }
+    
+    for(var i = two_player_snake2.length - 1; i >= 0; i--) {
+        
+        /*
+        if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
+            one_player_crash = true;
+            player1_snake_stopped = true;
+            
+        }
+        */
+        
+        two_player_snake2[i].draw();
         
     }
     
@@ -2215,7 +2302,8 @@ var draw = function() {
         
     }
     if(two_player) {
-        background(255, 0, 0);
+        
+        two_player_screen();
         
     }
     if(guide) {
