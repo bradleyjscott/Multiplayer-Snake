@@ -1,37 +1,30 @@
 noStroke();
 noCursor();
-keyCode = 39;
 
-//Buttons
+//Mouse and keys
 {
-var mouse_released = false;
-mouseReleased = function() {
-    mouse_released = true;
-    
-};
-
 var key_pressed = false;
-var pressed_key = 0;
+var pressed_key = 39;
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
     
 };
 
-/*
-var key_87_pressed = false;
-var keyPressed = function() { 
-    
-    if(keyCode === 87) {
-        key_87_pressed = true;
-        
-    } else {
-        key_87_pressed = false;
-    }
+keyReleased = function() {
+    key_pressed = false;
     
 };
-*/
 
+var mouse_released = false;
+mouseReleased = function() {
+    mouse_released = true;
+    
+};
+}
+
+//Buttons
+{
 var Button = function (XPosition, YPosition, Width, Height, R1, G1, B1, R2, G2, B2,  Text, TextSize, XOffset, YOffset) {
     this.XPosition = XPosition;
     this.YPosition = YPosition;
@@ -64,7 +57,8 @@ var difficulty = "Normal";
 var wall_collisions = false;
 var player1_colour = "White";
 var player2_colour = "Black";
-var button_timer = 0; //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
+var delay_timer = millis();
+//var button_timer = 0; //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
 
 //One player
 var player1_snake_stopped = true;
@@ -72,6 +66,7 @@ var player1_snake_stopped = true;
 //Game over
 var play_again = false;
 var go_home = false;
+var initials_pressed = false;
 
 Button.prototype.draw = function () {
     
@@ -82,7 +77,7 @@ Button.prototype.draw = function () {
         rect(this.XPosition, this.YPosition, this.Width, this.Height);
         
         if (mouseIsPressed) {
-            if(this.Text !== "Back") {
+            if(this.Text !== "Back" && this.Text !== "Initials") {
                 
                 fill(this.R2 - 32, this.G2 - 32, this.B2 - 32);
                 
@@ -107,6 +102,7 @@ Button.prototype.draw = function () {
             } else if(button_text === "Settings") {
                 settings = true;
                 home = false;
+                delay_timer = millis();
                 
             } else if(button_text === "Guide") {
                 guide = true;
@@ -114,7 +110,6 @@ Button.prototype.draw = function () {
             } else if(button_text === "Back") {
                 home = true;
                 settings = false;
-                button_timer = 0;
                 
             } else if(button_text === "Easy") {
                 difficulty = "Easy";
@@ -131,13 +126,13 @@ Button.prototype.draw = function () {
             } else if(button_text === "Off") {
                 wall_collisions = false;
                 
-            } else if(button_text === "p1_red" && button_timer > 10) {
+            } else if(button_text === "p1_red" && millis() > delay_timer + 50) {
                 player1_colour = "Red";
                 
-            } else if(button_text === "p1_orange" && button_timer > 10) {
+            } else if(button_text === "p1_orange" && millis() > delay_timer + 50) {
                 player1_colour = "Orange";
                 
-            } else if(button_text === "p1_yellow" && button_timer > 10) {
+            } else if(button_text === "p1_yellow" && millis() > delay_timer + 50) {
                 player1_colour = "Yellow";
                 
             } else if(button_text === "p1_green") {
@@ -184,6 +179,9 @@ Button.prototype.draw = function () {
                 
             } else if(button_text === "Home") {
                 go_home = true;
+                
+            } else if(button_text === "Initials") {
+                initials_pressed = true;
                 
             }
         }
@@ -459,7 +457,8 @@ BodySegment.prototype.draw = function() {
         home_snake_segments.push(new BodySegment(314 - i, "White"));
         
     }
-    var number = 0;
+    var number = 0; //Used for easter message
+    var update_timer = millis();
     var right = true;
     var down = false;
     var left = false;
@@ -467,13 +466,16 @@ BodySegment.prototype.draw = function() {
     var key_codes = [39];
     var easter_food = new BodySegment(673, "Food");
     var draw_easter_food = false;
-    var speed = 10; //Smaller is faster, 1 is fastest
+    var speed = 175; //Smaller is faster
     var easter_eat = false;
     var R_val = [255, 255, 255, 255, 255, 255, 255, 255, 255, 192, 128, 64, 0, 0, 0, 0, 0, 19, 38, 57, 75, 116, 157, 198, 238, 243, 247, 251]; //Unused
     var G_val = [0, 41, 83, 124, 165, 188, 211, 234, 255, 224, 192, 160, 128, 96, 64, 32, 0, 0, 0, 0, 0, 33, 65, 98, 130, 98, 65, 33]; //Unused
     var B_val = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 128, 192, 255, 224, 193, 162, 130, 157, 184, 211, 238, 179, 119, 60]; //Unused
     var home_crash = false;
     var one_player = false;
+    
+    var test_timer = millis();
+    var timed_time = 0;
     
 }
 //Settings screen variables
@@ -551,7 +553,9 @@ BodySegment.prototype.draw = function() {
     var initials_text = "";
     var initials = ["  ", "  ", "  "];
     var place = 0;
-    //perfect_game = true;
+    var initials_button = new Button (155, 245, 90, 44, 255, 255, 255, 255, 255, 255, "Initials", 0, 47, 29);
+    var Is = 0;
+    var enter_pressed = false;
     
 }
 
@@ -589,6 +593,7 @@ var home_grid = function() {
 
 var update_snake = function(snake, top_row) {
     var old_head = snake[0].position;
+    update_timer = millis();
     
     if(key_codes[0] === 37 && !right) {
         left = true;
@@ -665,6 +670,10 @@ var update_snake = function(snake, top_row) {
     if(old_head % 40 === 0 && snake[0].position % 40 === 1) {
         
         snake[0].position -= 40;
+        
+        //Delete
+        timed_time = millis() - test_timer;
+        test_timer = millis();
         
     }
     if(old_head % 40 === 1 && snake[0].position % 40 === 0) {
@@ -836,19 +845,23 @@ var reset_one_player_snake = function() {
     add_length = false;
     perfect_game = false;
     player1_snake_stopped = true;
-    keyCode = 37;
     rotation = 0;
     side = "Right";
-    //right = true;
-    game_over = false;
+    right = true;
     left = false;
+    up = false;
+    down = false;
+    game_over = false;
+    end_delay = -40;
+    key_codes = [];
+    pressed_key = 37;
     initials_text = "";
     initials = ["  ", "  ", "  "];
-    end_delay = -40;
+    place = 0;
     
 };
 
-var reset_home_snake = function () {
+var reset_home_snake = function() {
     
     key_codes = [39];
     home_snake_segments = [];
@@ -1018,6 +1031,10 @@ var add_initial = function () {
         
         
     }
+    if(pressed_key === 10) {
+        enter_pressed = true;
+        
+    }
     
     place = 0;
     for(var i = 0; i < initials.length; i++) {
@@ -1089,7 +1106,7 @@ var home_screen = function() {
     var add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
         
-        if(key_codes[i] === keyCode) {
+        if(key_codes[i] === pressed_key) {
             add_code = false;
             
         }
@@ -1097,7 +1114,7 @@ var home_screen = function() {
     
     if(add_code) {
         
-        key_codes.push(keyCode);
+        key_codes.push(pressed_key);
         
     }
     
@@ -1111,7 +1128,7 @@ var home_screen = function() {
         
     }
     
-    if(number > speed && !home_crash) {
+    if(millis() >= update_timer + speed && !home_crash) {
         number = 0;
         
         update_snake(home_snake_segments, 1);
@@ -1172,8 +1189,6 @@ var home_screen = function() {
 };
 
 var settings_screen = function() {
-    button_timer++;
-    
     background(140, 140, 140);
     textSize(55);
     fill(0, 0, 0);
@@ -1227,7 +1242,7 @@ var settings_screen = function() {
     
     //Difficulty indicator
     if(difficulty === "Easy") {
-        speed = 15;
+        speed = 250;
         
         if(difficulty_indicator_x >= 38) {
             
@@ -1248,7 +1263,7 @@ var settings_screen = function() {
         }
         
     } else if(difficulty === "Normal") {
-        speed = 10;
+        speed = 175;
         
         //Need small gap in the middle for indicator to stop changing value
         if(difficulty_indicator_x < 99) {
@@ -1283,7 +1298,7 @@ var settings_screen = function() {
         }
         
     } else if(difficulty === "Hard") {
-        speed = 5;
+        speed = 100;
         
         if(difficulty_indicator_x <= 160) {
             
@@ -1867,7 +1882,6 @@ var settings_screen = function() {
 };
 
 var one_player_screen = function() {
-    number++;
     background (32, 138, 35);
     fill(0, 0, 0);
     rect(0, 0, 400, 20);
@@ -1905,7 +1919,7 @@ var one_player_screen = function() {
     var add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
         
-        if(key_codes[i] === keyCode) {
+        if(key_codes[i] === pressed_key) {
             add_code = false;
             
         }
@@ -1913,24 +1927,21 @@ var one_player_screen = function() {
     
     if(add_code) {
         
-        key_codes.push(keyCode);
+        key_codes.push(pressed_key);
         
     }
     
-    if(player1_snake_stopped && (keyCode === 38 || keyCode === 39 || keyCode === 40) && !one_player_crash) {
-        number = 0;
+    if(player1_snake_stopped && (pressed_key === 38 || pressed_key === 39 || pressed_key === 40) && !one_player_crash) {
         player1_snake_stopped = false;
+        update_timer = millis();
         key_codes.shift();
         key_codes.shift();
-        
-    } else if (player1_snake_stopped) {
-        rotation = 0;
         
     }
     
     //Update snake position
-    if(number > speed && !player1_snake_stopped && !one_player_crash) {
-        number = 0;
+    if(millis() >= update_timer + speed && !player1_snake_stopped && !one_player_crash) {
+    number = 0;
         
         update_snake(one_player_snake, 3);
         
@@ -1970,7 +1981,6 @@ var one_player_screen = function() {
     
     if(wall_collisions && ((one_player_snake[0].position % 40 === 1) && key_codes[0] === 37 || (one_player_snake[0].position % 40 === 0) && key_codes[0] === 39 || (Math.ceil(one_player_snake[0].position / 40) === 3) && key_codes[0] === 38 || (Math.ceil(one_player_snake[0].position / 40) === 40) && key_codes[0] === 40)) {
         one_player_crash = true;
-        //player1_snake_stopped = true;
         
     }
     
@@ -2017,6 +2027,41 @@ var one_player_screen = function() {
         one_player_snake[0].draw_eyes = false;
         game_over = true;
         
+        if(wall_collisions && pressed_key === 39) {
+            side = "Right";
+            rotation = 0;
+            
+        }
+        if(wall_collisions && pressed_key === 37) {
+            side = "Left";
+            rotation = 0;
+            
+        }
+        if(wall_collisions && pressed_key === 38) {
+            
+            if(right) {
+                rotation = -90;
+                
+            } else {
+                rotation = 90;
+                
+            }
+            
+            
+        }
+        if(wall_collisions && pressed_key === 40) {
+            
+            if(right) {
+                rotation = 90;
+                
+            } else {
+                rotation = -90;
+                
+            }
+            
+            
+        }
+        
     }
     
 };
@@ -2055,13 +2100,20 @@ var end_game_screen = function() {
             text(" for a new highscore", 200, 244);
             
         } else {
+            var cursor_time = millis();
             initials_text = [];
             initials_text += initials[0];
             initials_text += initials[1];
             initials_text += initials[2];
             initials.splice(3, 1);
             
-            if(key_pressed && initials.length <  4) {
+            if(mouse_released) {
+                enter_pressed = false;
+                initials_pressed = false;
+                
+            }
+            
+            if(key_pressed && initials.length <  4 && initials_pressed) {
                 add_initial();
                 
             }
@@ -2069,12 +2121,26 @@ var end_game_screen = function() {
             textSize(20);
             text("Enter your initials:", 200, 230);
             
-            fill(255, 255, 255);
-            rect(155, 245, 90, 44);
+            initials_button.draw();
+            
             fill(0, 0, 0);
             textSize(35);
-            
             text(initials_text, 200, 280);
+            
+            Is = 0;
+            for(var i = 0; i < initials.length; i++) {
+                
+                if(initials[i] === "I") {
+                    Is++;
+                    
+                }
+                
+            }
+            
+            if(initials_pressed && !enter_pressed && (cursor_time % 1000) < 500) {
+                text("|", 177 + (place * 21) - (8 * Is), 276);
+                
+            }
             
         }
         
