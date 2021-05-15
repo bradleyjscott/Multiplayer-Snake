@@ -29,6 +29,10 @@ Updates and Fixes:
 - Fixed location of cursor on initials and player names enter fields.
 - Player two name entry field is now automatically selected when enter is pressed on player one entry field.
 - Improved display of winning player's name on two player 'game over' screen.
+
+2020 Jul 09
+- Fixed issue with two player snake head orientation on two player game reset.
+- Improved 'Paused' flag appearance.
 */
 noStroke();
 noCursor();
@@ -1809,6 +1813,7 @@ var reset_two_player_snakes = function() {
     end_delay = -40;
     player_one_key_pressed = false;
     player_two_key_pressed = false;
+    P2_rotation = 0;
     
 };
 }
@@ -2740,16 +2745,6 @@ var one_player_screen = function() {
         
     }
     
-    //Do when paused
-    if(paused) {
-        update_timer = millis();
-        fill(255, 255, 255);
-        textAlign(CENTER);
-        text("PAUSED", 200, 15);
-        textAlign(LEFT);
-        
-    }
-    
     //Check for a perfect game
     if(one_player_snake.size === 1520) {
         perfect_game = true;
@@ -2929,6 +2924,19 @@ var one_player_screen = function() {
         
     }
     
+    //Do when paused
+    if(paused) {
+        update_timer = millis();
+        fill(115, 115, 115, 180);
+        rect(100, 60, 200, 62, 15);
+        
+        fill(0, 0, 0);
+        textSize(30);
+        textAlign(CENTER);
+        text("Paused", 200, 100);
+        textAlign(LEFT);
+        
+    }
 };
 
 var two_player_screen = function() {
@@ -2970,16 +2978,6 @@ var two_player_screen = function() {
                 
             }
         }
-    }
-    
-    //Do when paused
-    if(paused) {
-        update_timer = millis();
-        fill(255, 255, 255);
-        textAlign(CENTER);
-        text("PAUSED", 200, 15);
-        textAlign(LEFT);
-        
     }
     
     //Update available food positions
@@ -3092,7 +3090,7 @@ var two_player_screen = function() {
         }
     }
     
-    //Crash when eather snake runs into itself or the other one
+    //Crash when either snake runs into itself or the other one
     for(var i = two_player_snake1.length - 1; i > 0; i--) {
         
         if(two_player_snake1[i].position === two_player_snake1[0].position) {
@@ -3299,6 +3297,18 @@ var two_player_screen = function() {
     if(!before_start) {
         
         two_player_food.draw();
+        
+    }
+    
+    //Do when paused
+    if(paused) {
+        update_timer = millis();
+        fill(115, 115, 115, 180);
+        rect(100, 60, 200, 62, 15);
+        
+        fill(0, 0, 0);
+        textSize(30);
+        text("Paused", 200, 100);
         
     }
     
