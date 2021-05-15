@@ -1,5 +1,18 @@
 /*
+Welcome to my version of the game of Snake!
 
+Snake has long been one of my favourite video games, so when I was thinking of making a game it was the obvious choice. I took inspiration for this game from other versions of snake that I have played combined with some of my own ideas to make what I think is a good version of the game.
+
+This game has single and two player versions, so see how long you can last on your own or grab a friend and find out who's the snake master!
+
+This is the first computer game I have created, so I would genuinely love to hear your experience and feedback. Seriously, even if it's later then 2050, shoot me a message, I'll be happy to hear that you played this game!
+
+Send me a screenshot of your high score to have it officially added to the high scores!
+
+There are probably still bugs and incorrect behaviour in this code. If you find anything that isn't working or seems to be working incorrectly, please let me know as much as you can about it; that will help me improve this game.
+
+I hope you enjoy playing this game as much as I did making it!
+Happy slithering!
 */
 noStroke();
 noCursor();
@@ -12,6 +25,8 @@ var paused = false;
 var shift_held = false;
 var player_one_key_pressed = false;
 var player_two_key_pressed = false;
+
+//Do when any key is pressed
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
@@ -41,6 +56,7 @@ keyPressed = function() {
     }
 };
 
+//Do when any key is released
 keyReleased = function() {
     key_pressed = false;
     
@@ -51,6 +67,7 @@ keyReleased = function() {
     
 };
 
+//Do when the mouse is released
 var mouse_released = false;
 mouseReleased = function() {
     
@@ -61,6 +78,7 @@ mouseReleased = function() {
     
 };
 
+//Do when the mouse is scrolled
 var scroll_value = 0;
 mouseScrolled = function() {
     
@@ -101,7 +119,7 @@ var Button = function (XPosition, YPosition, Width, Height, R1, G1, B1, R2, G2, 
     
 };
 
-//Home
+//Home button variables
 var home = true; //true
 var one_player_pressed = false; //false
 var two_player_pressed = false;
@@ -109,7 +127,7 @@ var two_player = false; //false
 var settings = false; //false
 var guide = false; //false
 
-//Settings
+//Settings button variables
 var back = false; //And Guide
 var over_back = false;
 var difficulty = "Normal";
@@ -118,23 +136,24 @@ var player1_colour = "White";
 var player2_colour = "Black";
 var delay_timer = millis(); //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
 
-//One player
+//One player button variables
 var player1_snake_stopped = true;
 
-//Game over
+//Game over button variables
 var play_again = false;
 var go_home = false;
 var initials_pressed = false;
 
-//Enter names
+//Enter names screen button variables
 var continue_pressed = false;
 var enter_player_one_name = false;
 var enter_player_two_name = false;
 
-//Guide
+//Guide screen button variablres
 var scroll_button_pressed = false;
 var click_y_position = 0;
 
+//How to draw the buttons
 Button.prototype.draw = function () {
     
     if(this.Text === "Scroll" && mouseIsPressed) {
@@ -176,6 +195,7 @@ Button.prototype.draw = function () {
             rect(this.XPosition + 1.5, this.YPosition + 1.5, this.Width - 4, this.Height - 4);
         } 
         
+        //Button functionality
         var button_text = this.Text;
         if(mouse_released) {
             
@@ -321,6 +341,7 @@ var Head = function(position, colour, draw_eyes, side) {
     
 };
 
+//Draw the snake head segment
 Head.prototype.draw = function() {
     var x_position = 0;
     var y_position = 0;
@@ -440,6 +461,7 @@ Head.prototype.draw = function() {
         
     }
     
+    //How to draw the face
     if(this.side === "Right") {
         
         if(this.draw_eyes) {
@@ -497,6 +519,7 @@ var BodySegment = function(position, colour) {
     
 };
 
+//How to draw the body segments
 BodySegment.prototype.draw = function() {
     
     var x_position = ((this.position - 1) % 40) * 10 + 5;
@@ -578,8 +601,8 @@ BodySegment.prototype.draw = function() {
 //Home screen variables
 {
     //Highest = 15190
-    var high_score_initials = ["BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
-    var high_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var high_score_initials = ["JOE", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
+    var high_scores = [1030, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
     var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
@@ -613,6 +636,7 @@ BodySegment.prototype.draw = function() {
     var cheating = false;
     var override_cheat = false;
     var fill_white = false;
+    var delay_start = millis();
     
 }
 //Settings screen variables
@@ -761,7 +785,7 @@ var tie = false;
     var Is = 0;
     var enter_pressed = false;
     var cheating2 = false; // Hidden here
-    var check_cheating_initials = ["BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
+    var check_cheating_initials = ["JOE", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
     
 }
 //Guide screen variables
@@ -778,7 +802,7 @@ var tie = false;
         "your snake. When you run into a", 
         "section of your own snake (or the",
         "wall if that setting is enabled) you",
-        "die.",
+        "die. Press space to pause.",
         "",
         "Single Player:",
         "In the single player version, you",
@@ -832,10 +856,12 @@ var game_grid = function() {
     noStroke();
 };
 
+//Update all the snakes
 var update_snake = function(snake, top_row) {
     var old_head = snake[0].position;
     update_timer = millis();
     
+    //Appropreatley use given key code
     if(snake !== two_player_snake2) {
         
         if((key_codes[0] === 37 || key_codes[0] === 65) && !right) {
@@ -942,12 +968,14 @@ var update_snake = function(snake, top_row) {
         
     }
     
+    //Move snake one unit forwards
     for(var i = snake.length - 1; i > 0; i--) {
         
         snake[i].position = snake[i - 1].position;
         
     }
     
+    //Move snake head in the correct direction
     if(snake !== two_player_snake2) {
         
         if(right) {
@@ -990,6 +1018,7 @@ var update_snake = function(snake, top_row) {
         
     }
     
+    //Move snake through the walls
     if(old_head % 40 === 0 && snake[0].position % 40 === 1) {
         
         snake[0].position -= 40;
@@ -1012,6 +1041,7 @@ var update_snake = function(snake, top_row) {
     }
 };
 
+//Type out the crash message
 var type_home_crash_message = function() {
     
     textSize(12);
@@ -1138,6 +1168,7 @@ var type_home_crash_message = function() {
     }
 };
 
+//Reset the one player snake variables
 var reset_one_player_snake = function() {
     score = 0;
     one_player_snake = [];
@@ -1181,6 +1212,7 @@ var reset_one_player_snake = function() {
     
 };
 
+//Reset teh home snake variables
 var reset_home_snake = function() {
     
     key_codes = [39];
@@ -1200,6 +1232,7 @@ var reset_home_snake = function() {
     home_crash = false;
 };
 
+//Add initials to the string when entering on the end screen
 var add_initial = function () {
     
     if(pressed_key === 48) {
@@ -1369,6 +1402,7 @@ var add_initial = function () {
     key_pressed = false;
 };
 
+//Add the highscore to the home screen variables
 var add_high_score = function() {
     
     for(var i = 0; i < high_scores.length; i++) {
@@ -1385,6 +1419,7 @@ var add_high_score = function() {
     }
 };
 
+//Add letters to the srting when entering two player names
 var add_name_letter = function(name) {
     var added_letter = '';
     
@@ -1710,6 +1745,7 @@ var add_name_letter = function(name) {
     key_pressed = false;
 };
 
+//Reset the two player snake variables
 var reset_two_player_snakes = function() {
     two_player_snake1 = [];
     two_player_snake1.push(new Head(812, player1_colour, true,  "Right"));
@@ -1769,6 +1805,7 @@ var reset_two_player_snakes = function() {
 var home_screen = function() {
     number++;
     
+    //Base visuals
     background (32, 138, 35);
     textSize(68);
     textAlign(CENTER);
@@ -1777,6 +1814,7 @@ var home_screen = function() {
     textSize(12);
     textAlign(LEFT);
     
+    //High score board visuals
     fill(69, 79, 84);
     rect(120, 100, 160, 210, 8);
     fill(235, 205, 12);
@@ -1784,6 +1822,7 @@ var home_screen = function() {
     text("High Scores", 151, 120);
     fill(0, 0, 0);
     
+    //Display differently when cheating
     if((cheating || cheating2) && !override_cheat) {
         rect(138, 127, 124, 1.5);
         
@@ -1791,11 +1830,11 @@ var home_screen = function() {
         rect(130, 127, 140, 1.5);
         
     }
+    
+    //High score text
     fill(235, 205, 12);
     textSize(12);
-    
     textAlign(CENTER);
-
     //High Score text
     for(var i = 0; i < 10; i++) {
      
@@ -1806,11 +1845,14 @@ var home_screen = function() {
     }
     textAlign(LEFT);
     
+    //Draw the home screen buttons
     One_player_button.draw();
     Two_player_button.draw();
     Settings_button.draw();
     Instructions_button.draw();
     
+    
+    //Add code to queue when it's not already there
     var add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
         
@@ -1819,13 +1861,14 @@ var home_screen = function() {
             
         }
     }
-    
+    //Do when add code is true
     if(add_code) {
         
         key_codes.push(pressed_key);
         
     }
     
+    //Draw the easter food when the snake changes direction
     if(!right) {
         draw_easter_food = true;
         
@@ -1836,13 +1879,15 @@ var home_screen = function() {
         
     }
     
-    if(millis() >= update_timer + speed && !home_crash) {
+    //When to update the home snake
+    if(millis() >= update_timer + speed && !home_crash && millis() > delay_start + 1000) {
         number = 0;
         
         update_snake(home_snake_segments, 1);
         
     }
     
+    //Change the home snake to the player one colour
     if(home_snake_segments[0].colour !== player1_colour && !easter_eat) {
         
         for(var i = 0; i < home_snake_segments.length; i++) {
@@ -1868,6 +1913,7 @@ var home_screen = function() {
         }
     }
     
+    //Display easter colours when food eaten
     if(home_snake_segments[0].position === 673) {
         easter_eat = true;
         
@@ -1880,6 +1926,7 @@ var home_screen = function() {
         }
     }
     
+    //Check if the home snake crashes
     for(var i = 1; i < home_snake_segments.length; i++) {
         
         if(home_snake_segments[0].position === home_snake_segments[i].position) {
@@ -1895,6 +1942,7 @@ var home_screen = function() {
         
     }
     
+    //button operation
     if(one_player_pressed) {
         one_player_pressed = false;
         one_player = true;
@@ -1910,7 +1958,8 @@ var home_screen = function() {
         
     }
     
-    if(high_score_initials[0] !== "BJS") {
+    //Check for cheating
+    if(high_score_initials[0] !== "JOE") {
         cheating = true;
         
     }
@@ -1951,6 +2000,7 @@ var home_screen = function() {
         
     }
     
+    //Make white screen when cheating
     for(var i = 0; i < high_score_initials.length; i++) {
         
         if(high_score_initials[i].length !== 3 && !override_cheat) {
@@ -1964,16 +2014,19 @@ var home_screen = function() {
 
 var settings_screen = function() {
     background(140, 140, 140);
+    //Settings base visuals
     textSize(55);
     fill(0, 0, 0);
     text("Settings", 99, 50);
     
+    //Button labels
     textSize(25);
     text("Difficulty", 53, 112);
     text("Wall Collisions", 219.5, 112);
     text("Player 1 Colour", 13.5, 250);
     text("Player 2 Colour", 213.5, 250);
     
+    //Draw buttons
     difficulty_easy.draw();
     difficulty_normal.draw();
     difficulty_hard.draw();
@@ -2098,6 +2151,7 @@ var settings_screen = function() {
     fill(0, 0, 0);
     triangle(difficulty_indicator_x, 160, difficulty_indicator_x - 15, 180, difficulty_indicator_x + 15, 180);
     
+    //Wall collisions indicator
     if(wall_collisions) {
         
         if(wall_collisions_indicator_x >= 269) {
@@ -2397,7 +2451,7 @@ var settings_screen = function() {
     
     triangle(player1_colour_indicator_x, player1_colour_indicator_y, player1_colour_indicator_x - 15, player1_colour_indicator_y + 20, player1_colour_indicator_x + 15, player1_colour_indicator_y + 20);
     
-    //Player2 colour
+    //Player2 colours
     //Jump between colours and shades
     if(player2_colour_indicator_y !== 362 && (player2_colour === "Black" || player2_colour === "White")) {
         player2_colour_indicator_y = 362;
@@ -2660,6 +2714,7 @@ var one_player_screen = function() {
     
     //game_grid(); // 40 by 38 spaces
     
+    //Base one player visuals
     fill(0, 0, 0);
     rect(0, 0, 400, 20);
     fill(235, 205, 12);
@@ -2673,6 +2728,7 @@ var one_player_screen = function() {
         
     }
     
+    //Do when paused
     if(paused) {
         update_timer = millis();
         fill(255, 255, 255);
@@ -2682,6 +2738,7 @@ var one_player_screen = function() {
         
     }
     
+    //Check for a perfect game
     if(one_player_snake.size === 1520) {
         perfect_game = true;
         player1_snake_stopped = true;
@@ -2689,6 +2746,7 @@ var one_player_screen = function() {
         
     }
     
+    //Update available positions
     old_positions = available_positions;
     available_positions = [];
     for(var i = 0; i < old_positions.length; i++) {
@@ -2704,6 +2762,7 @@ var one_player_screen = function() {
         
     }
     
+    //Add code to queue when it's not already there
     add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
         
@@ -2712,13 +2771,13 @@ var one_player_screen = function() {
             
         }
     }
-    
     if(add_code) {
         
         key_codes.push(pressed_key);
         
     }
     
+    //Start snake when a key pressed
     if(player1_snake_stopped && (pressed_key === 38 || pressed_key === 39 || pressed_key === 40 || pressed_key === 87 || pressed_key === 68 || pressed_key === 83) && !one_player_crash) {
         player1_snake_stopped = false;
         update_timer = millis();
@@ -2756,7 +2815,7 @@ var one_player_screen = function() {
     }
     
     
-    //See available spaces
+    //See available food spaces
     /*
     for(var i = 0; i < available_positions.length; i++) {
         var x_position = ((available_positions[i] - 1) % 40) * 10 + 5;
@@ -2769,6 +2828,7 @@ var one_player_screen = function() {
     }
     */
     
+    //Draw the one player snake and check for crashing into itself
     for(var i = one_player_snake.length - 1; i >= 0; i--) {
         
         if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
@@ -2781,12 +2841,13 @@ var one_player_screen = function() {
         
     }
     
+    //Set crash to true if the snake crashes into the wall when wall collisions are on
     if(wall_collisions && ((one_player_snake[0].position % 40 === 1) && key_codes[0] === 37 || (one_player_snake[0].position % 40 === 0) && key_codes[0] === 39 || (Math.ceil(one_player_snake[0].position / 40) === 3) && key_codes[0] === 38 || (Math.ceil(one_player_snake[0].position / 40) === 40) && key_codes[0] === 40)) {
         one_player_crash = true;
         
     }
     
-    //Eat
+    //Eating
     if(one_player_snake[0].position === food.position) {
         random_number = floor(random(81, available_positions.length + 0.9));
         eat = true;
@@ -2813,6 +2874,7 @@ var one_player_screen = function() {
     
     food.draw();
     
+    //Do when the snake crashes
     if(one_player_crash) {
         fill(255, 255, 255);
         one_player_snake[0].draw_eyes = false;
@@ -2862,6 +2924,7 @@ var two_player_screen = function() {
     
     //game_grid(); // 40 by 38 spaces
     
+    //Two player screen base visuals
     fill(0, 0, 0);
     rect(0, 0, 400, 20);
     fill(235, 205, 12);
@@ -2872,6 +2935,7 @@ var two_player_screen = function() {
     text(player_two_name + "'s Length: " + two_player_snake2.length, 395, 15);
     textAlign(CENTER);
     
+    //Display enter names screen when starting if names aren't entered, otherwise take key entry
     if(!names_entered) {
         names_entered = true;
         enter_names = true;
@@ -2896,6 +2960,7 @@ var two_player_screen = function() {
         }
     }
     
+    //Do when paused
     if(paused) {
         update_timer = millis();
         fill(255, 255, 255);
@@ -2905,7 +2970,7 @@ var two_player_screen = function() {
         
     }
     
-    
+    //Update available food positions
     two_player_old_positions = two_player_available_positions;
     two_player_available_positions = [];
     for(var i = 0; i < two_player_old_positions.length; i++) {
@@ -2918,6 +2983,7 @@ var two_player_screen = function() {
         
     }
     
+    //If the key code isn't in the queue add it
     snake_one_add_code = true;
     snake_two_add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
@@ -2934,7 +3000,6 @@ var two_player_screen = function() {
             
         }
     }
-    
     if(!before_start && snake_one_add_code && (pressed_key === 65 || pressed_key === 87 || pressed_key === 68 || pressed_key === 83)) {
         
         key_codes.push(pressed_key);
@@ -2990,7 +3055,7 @@ var two_player_screen = function() {
         
     }
     
-    //Crashing
+    //Crash when both heads collide
     if(two_player_snake1[0].position === two_player_snake2[0].position) {
         both_crash = true;
         game_over = true;
@@ -3015,6 +3080,7 @@ var two_player_screen = function() {
         }
     }
     
+    //Crash when eather snake runs into itself or the other one
     for(var i = two_player_snake1.length - 1; i > 0; i--) {
         
         if(two_player_snake1[i].position === two_player_snake1[0].position) {
@@ -3036,7 +3102,6 @@ var two_player_screen = function() {
         two_player_snake1[i].draw();
         
     }
-    
     for(var i = two_player_snake2.length - 1; i > 0; i--) {
         
         if(two_player_snake2[i].position === two_player_snake2[0].position) {
@@ -3063,6 +3128,7 @@ var two_player_screen = function() {
         
     }
     
+    //Which head to draw on top
     if(head_on_top === 2) {
         two_player_snake1[0].draw();
         drawing_second_head = true;
@@ -3087,7 +3153,6 @@ var two_player_screen = function() {
         wall_crash = true;
         
     }
-    
     //Not sure why I need extra !player_two_key_pressed check here
     if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && (snake_two_key_codes[0] === 37 || !player_two_key_pressed) || (two_player_snake2[0].position % 40 === 0) && snake_two_key_codes[0] === 39 || (Math.ceil(two_player_snake2[0].position / 40) === 3) && snake_two_key_codes[0] === 38 || (Math.ceil(two_player_snake2[0].position / 40) === 40) && snake_two_key_codes[0] === 40)) {
         game_over = true;
@@ -3098,6 +3163,7 @@ var two_player_screen = function() {
         
     }
     
+    //Rotate head correctly when crashed into wall
     if(wall_crash && snake_one_crash) {
         
         if(pressed_key === 68) {
@@ -3134,7 +3200,6 @@ var two_player_screen = function() {
         }
         
     }
-    
     if(wall_crash && snake_two_crash) {
         
         if(pressed_key === 39) {
@@ -3172,6 +3237,7 @@ var two_player_screen = function() {
         
     }
     
+    //Find a tie when both players win
     if(player_one_win && player_two_win) {
         player_one_win = false;
         player_two_win = false;
@@ -3179,7 +3245,7 @@ var two_player_screen = function() {
 
     }
     
-    //Eat
+    //Eating
     if(two_player_snake1[0].position === two_player_food.position) {
         two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
         snake_one_eat = true;
@@ -3203,6 +3269,7 @@ var two_player_screen = function() {
         
     }
     
+    //Don't draw the food before the game starts
     if(!before_start) {
         
         two_player_food.draw();
@@ -3214,6 +3281,8 @@ var two_player_screen = function() {
 
 var enter_names_screen = function() {
     var cursor_time = millis();
+    
+    //Enter names screen base visuals
     fill(85, 85, 85, 200);
     rect(0, 0, 400, 400);
     fill(180, 180, 180);
@@ -3229,6 +3298,7 @@ var enter_names_screen = function() {
     
     textAlign(LEFT);
     
+    //Clicked on button is false when mouse released
     if(mouse_released) {
         enter_pressed = false;
         enter_player_one_name = false;
@@ -3236,10 +3306,12 @@ var enter_names_screen = function() {
         
     }
     
+    //Draw enter names buttons
     player_one_name_button.draw();
     player_two_name_button.draw();
     continue_button.draw();
     
+    //Add letters to names when keys pressed
     if(key_pressed) {
         
         if(enter_player_one_name && (player_one_name_text.length < 15 || pressed_key === 8)) {
@@ -3254,7 +3326,7 @@ var enter_names_screen = function() {
         
     }
     
-    
+    //How to backspace
     if(backspace) {
         backspace = false;
         
@@ -3279,6 +3351,7 @@ var enter_names_screen = function() {
         }
     }
     
+    //Figure out where cursor should be
     player_one_Is = 0;
     player_one_capitals = 0;
     for(var i = 0; i < player_one_name_text.length; i++) {
@@ -3310,6 +3383,7 @@ var enter_names_screen = function() {
         
     }
     
+    //Flash cursors
     if(enter_player_one_name && !enter_pressed && (cursor_time % 1000) < 500) {
         text("|", 200 + (player_one_capitals * 7.5) + ((player_one_name_text.length - player_one_capitals) * 4.5) - (5 * player_one_Is), 184);
         
@@ -3324,6 +3398,7 @@ var enter_names_screen = function() {
     text(player_two_name_text, 200, 260);
     textAlign(LEFT);
 
+    //Close enter names screen when enter pressed
     if(continue_pressed) {
         
         if(player_one_name_text !== "") {
@@ -3352,12 +3427,13 @@ var end_game_screen = function() {
     end_delay++;
     override_cheat = true;
     
+    //Display the end screen after faded to grey
     if(end_delay > delay_time) {
         both_crash = true;
         
+        //End game screen base visuals
         fill(110, 110, 110, 190);
         rect(0, 0, 400, 400);
-        
         fill(194, 129, 33);
         rect(75, 45, 250, 310, 20);
         
@@ -3367,6 +3443,7 @@ var end_game_screen = function() {
         
         textAlign(CENTER);
         
+        //Display on end of one player or two player game
         if(one_player) {
             textSize(25);
             text("Final Score: " + score, 200, 124);
@@ -3490,6 +3567,7 @@ var end_game_screen = function() {
         play_again_button.draw();
         home_screen_button.draw();
         
+        //Play again or go home
         if(play_again) {
             game_over = false;
             play_again = false;
@@ -3527,6 +3605,7 @@ var end_game_screen = function() {
 var guide_screen = function() {
     background(186, 163, 108);
     
+    //Guide screen base visuals
     textAlign(CENTER);
     textSize(30);
     text("How To Play:", 200, text_y_position);
@@ -3534,6 +3613,8 @@ var guide_screen = function() {
     text("(Hold shift to scroll)", 200, text_y_position + 17);
     textAlign(LEFT);
     textSize(20);
+    
+    //Display all of the text on the guide screen
     for(var i = 0; i < guide_text.length; i++) {
         
         if(guide_text[i] === "Single Player:" || guide_text[i] === "Two Player:" || guide_text[i] === "Thanks for playing" || guide_text[i] === "Good luck!") {
@@ -3549,6 +3630,7 @@ var guide_screen = function() {
         
     }
     
+    //Rectangles to cover top and bottom for text to hide behind
     fill(186, 163, 108);
     rect(0, 0, 400, 80);
     rect(0, 360, 400, 40);
@@ -3578,21 +3660,17 @@ var guide_screen = function() {
     line(20, 42, 10, 30);
     line(40, 30, 11, 30);
     
-    stroke(0, 0, 0);
     //Borders
+    stroke(0, 0, 0);
     line(30, 80, 30, 360);
     line(370, 80, 370, 360);
     line(30, 80, 369, 80);
     line(30, 361, 369, 361);
     noStroke();
     
-    fill(210, 210, 210);
-    rect(350, 82, 18, 277);
-    fill(170, 170, 170);
-    //rect(350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136);
-    
     scroll_button.draw();
     
+    //Figure out text position when scroll bar is pressed
     if(scroll_button_pressed) {
         if(scroll_button.YPosition >= 82 && scroll_button.YPosition <= 223) {
             scroll_button.YPosition = old_Y_position - (click_y_position - mouseY);
@@ -3618,6 +3696,7 @@ var guide_screen = function() {
         
     }
     
+    //Force stop and ends of text
     if(text_y_position > 115) {
         scroll_button.YPosition = 82;
         text_y_position = 115;
@@ -3632,6 +3711,7 @@ var guide_screen = function() {
 
 var draw = function() {
     
+    //Which screen to deisplay
     if(home) {
         
         home_screen();
