@@ -49,6 +49,9 @@ Updates and Fixes:
 2020 Jul 27
 - Added boost to one and two player modes.
 - Fixed incorrect random food locations in two player mode (sometimes not showing).
+
+2020 Jul 28
+- Fixed small boost control issues.
 */
 noStroke();
 noCursor();
@@ -63,8 +66,15 @@ var player_one_key_pressed = false;
 var player_two_key_pressed = false;
 var held = false;
 var held2 = false;
-var arrow_keys = false;
 var WASD_keys = false;
+var up_key = false;
+var right_key = false;
+var down_key = false;
+var left_key = false;
+var W_key = false;
+var A_key = false;
+var S_key = false;
+var D_key = false;
 
 //Do when any key is pressed
 keyPressed = function() {
@@ -72,7 +82,7 @@ keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
     
-    if(arrow_keys) {
+    if(left_key || up_key || right_key || down_key) {
         held = true;
         
     }
@@ -81,13 +91,82 @@ keyPressed = function() {
         
     }
     
-    if(keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40) {
-        arrow_keys = true;
+    if(keyCode === 37) {
         
+        if(!left_key) {
+            held = false;
+            
+        }
+        
+        left_key = true;
     }
+    if(keyCode === 38) {
+        
+        if(!up_key) {
+            held = false;
+            
+        }
+        
+        up_key = true;
+    }
+    if(keyCode === 39) {
+        
+        if(!right_key) {
+            held = false;
+            
+        }
+        
+        right_key = true;
+    }
+    if(keyCode === 40) {
+        
+        if(!down_key) {
+            held = false;
+            
+        }
+        
+        down_key = true;
+    }
+    
     if(keyCode === 65 || keyCode === 87 || keyCode === 68 || keyCode === 83) {
         WASD_keys = true;
         
+    }
+    if(keyCode === 87) {
+        
+        if(!W_key) {
+            held2 = false;
+            
+        }
+        
+        W_key = true;
+    }
+    if(keyCode === 65) {
+        
+        if(!A_key) {
+            held2 = false;
+            
+        }
+        
+        A_key = true;
+    }
+    if(keyCode === 83) {
+        
+        if(!S_key) {
+            held2 = false;
+            
+        }
+        
+        S_key = true;
+    }
+    if(keyCode === 68) {
+        
+        if(!D_key) {
+            held2 = false;
+            
+        }
+        
+        D_key = true;
     }
     
     if(keyCode === 16) {
@@ -119,14 +198,46 @@ keyPressed = function() {
 keyReleased = function() {
     key_pressed = false;
     
-    if(keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40) {
-        held = false;
-        arrow_keys = false;
+    if(keyCode === 37) {
+        left_key = false;
         
     }
-    if(keyCode === 65 || keyCode === 87 || keyCode === 68 || keyCode === 83) {
+    if(keyCode === 38) {
+        up_key = false;
+        
+    }
+    if(keyCode === 39) {
+        right_key = false;
+        
+    }
+    if(keyCode === 40) {
+        down_key = false;
+        
+    }
+    //Prevent snake from continuing fast when all keys released
+    if(!left_key && !up_key && !right_key && !down_key) {
+        held = false;
+        
+    }
+    if(keyCode === 87) {
+        W_key = false;
+        
+    }
+    if(keyCode === 65) {
+        A_key = false;
+        
+    }
+    if(keyCode === 83) {
+        S_key = false;
+        
+    }
+    if(keyCode === 68) {
+        D_key = false;
+        
+    }
+    //Prevent snake from continuing fast when all keys released
+    if(!W_key && !A_key && !S_key && !D_key) {
         held2 = false;
-        WASD_keys = false;
         
     }
     
@@ -1939,7 +2050,7 @@ var home_screen = function() {
     //Boost control
     if(difficulty === "Easy") {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 125;
             
         } else {
@@ -1949,7 +2060,7 @@ var home_screen = function() {
         
     } else if(difficulty === "Normal") {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 88;
             
         } else {
@@ -1958,7 +2069,7 @@ var home_screen = function() {
         }
     } else {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 50;
             
         } else {
@@ -2181,6 +2292,11 @@ var settings_screen = function() {
     line(20, 42, 10, 30);
     line(40, 30, 11, 30);
     noStroke();
+    
+    if(back_home) {
+        reset_home_snake();
+        
+    }
     
     //Difficulty indicator
     if(difficulty === "Easy") {
@@ -2843,7 +2959,7 @@ var one_player_screen = function() {
     //Boost control
     if(difficulty === "Easy") {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 125;
             
         } else {
@@ -2853,7 +2969,7 @@ var one_player_screen = function() {
         
     } else if(difficulty === "Normal") {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 88;
             
         } else {
@@ -2862,7 +2978,7 @@ var one_player_screen = function() {
         }
     } else {
         
-        if(held || held2) {
+        if((held && pressed_key !== 87 && pressed_key !== 65 && pressed_key !== 83 && pressed_key !== 68) || (held2 && pressed_key !== 37 && pressed_key !== 38 && pressed_key !== 39 && pressed_key !== 40)) {
             speed = 50;
             
         } else {
