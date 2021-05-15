@@ -57,6 +57,10 @@ Updates and Fixes:
 - Completed multiple Guide screen updates including: Refactoring, Adding scroll bar background, and adding Common Questions and Comments section.
 - Added pre-game flag to one player screen.
 
+2021 May 14
+- Added defaults button on Settings screen.
+- Fixed boost issue: Player two boosting Player one.
+
 To view a version of this game prior to the listed updates visit the first spin-off below.
 */
 
@@ -70,7 +74,6 @@ var player_one_key_pressed = false;
 var player_two_key_pressed = false;
 var held = false;
 var held2 = false;
-var WASD_keys = false;
 var up_key = false;
 var right_key = false;
 var down_key = false;
@@ -83,6 +86,7 @@ var D_key = false;
 //Do when any key is pressed
 keyPressed = function() {
     held = false;
+    held2 = false;
     key_pressed = true;
     pressed_key = keyCode;
     
@@ -90,7 +94,7 @@ keyPressed = function() {
         held = true;
         
     }
-    if(WASD_keys) {
+    if(W_key || A_key || S_key || D_key) {
         held2 = true;
         
     }
@@ -132,10 +136,6 @@ keyPressed = function() {
         down_key = true;
     }
     
-    if(keyCode === 65 || keyCode === 87 || keyCode === 68 || keyCode === 83) {
-        WASD_keys = true;
-        
-    }
     if(keyCode === 87) {
         
         if(!W_key) {
@@ -307,6 +307,7 @@ var wall_collisions = false; //false
 var player1_colour = "White";
 var player2_colour = "Black";
 var delay_timer = millis(); //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
+var show_defaults_button = false;
 
 //One player button variables
 var player1_snake_stopped = true;
@@ -480,6 +481,12 @@ Button.prototype.draw = function () {
                 
             } else if(this.Text === "Scroll") {
                 scroll_button_pressed = false;
+                
+            } else if(this.Text === "Defaults") {
+                difficulty = "Normal";
+                wall_collisions = false;
+                player1_colour = "White";
+                player2_colour = "Black";
                 
             }
         }
@@ -775,8 +782,8 @@ BodySegment.prototype.draw = function() {
 //Home screen variables
 {
     //Highest = 15190
-    var high_score_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
-    var high_scores = [1440, 1150, 1030, 990, 780, 560, 450, 450, 430, 320];
+    var high_score_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "MJ", "AMK", "AMK", "AMK"];
+    var high_scores = [1440, 1150, 1030, 990, 780, 560, 470, 450, 450, 430];
     var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
     var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
@@ -837,6 +844,7 @@ BodySegment.prototype.draw = function() {
     var player2_purple = new Button (365, 263, 30, 30, 95, 0, 140, 111, 16, 156, "p2_purple", 0, 2, 21);
     var player2_black = new Button (269, 327, 30, 30, 0, 0, 0, 45, 45, 45, "p2_black", 0, 2, 21);
     var player2_white = new Button (301, 327, 30, 30, 255, 255, 255, 239, 239, 239, "p2_white", 0, 2, 21);
+    var defaults = new Button (315, 21, 66, 29, 175, 35, 0, 191, 51, 16, "Defaults", 16, 4, 21);
     var difficulty_indicator_x = 99;
     var difficulty_indicator_speed = 0;
     var wall_collisions_indicator_x = 331;
@@ -957,7 +965,7 @@ var update_timer2 = millis();
     var initials_button = new Button (145, 245, 110, 44, 255, 255, 255, 255, 255, 255, "Initials", 0, 47, 29);
     var enter_pressed = false;
     var cheating2 = false; // Hidden here
-    var check_cheating_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
+    var check_cheating_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "MJ", "AMK", "AMK", "AMK"];
     var name_text_size = 0;
     var blanks = 0;
     var initial_letters;
@@ -2200,7 +2208,7 @@ var home_screen = function() {
         cheating = true;
         
     }
-    if(high_score_initials[6] !== "AMK") {
+    if(high_score_initials[6] !== "MJ") {
         cheating = true;
         
     }
@@ -2220,7 +2228,7 @@ var home_screen = function() {
     //Make white screen when cheating
     for(var i = 0; i < high_score_initials.length; i++) {
         
-        if(high_score_initials[i].length !== 3 && !override_cheat) {
+        if(high_score_initials[i].length !== 3 && !override_cheat && i !== 6) {
             cheating = true;
             fill(255, 255, 255);
             rect(0, 0, 400, 400);
@@ -2265,6 +2273,10 @@ var settings_screen = function() {
     player2_purple.draw();
     player2_black.draw();
     player2_white.draw();
+    if(difficulty !== "Normal" || wall_collisions || player1_colour !== "White" || player2_colour !== "Black") {
+        defaults.draw();
+    }
+    
     
     back_button.draw();
     
