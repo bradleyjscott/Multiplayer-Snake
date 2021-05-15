@@ -1,0 +1,2168 @@
+noStroke();
+noCursor();
+keyCode = 39;
+
+//Buttons
+{
+var mouse_released = false;
+mouseReleased = function() {
+    mouse_released = true;
+    
+};
+
+var key_pressed = false;
+var pressed_key = 0;
+keyPressed = function() {
+    key_pressed = true;
+    pressed_key = keyCode;
+    
+};
+
+/*
+var key_87_pressed = false;
+var keyPressed = function() { 
+    
+    if(keyCode === 87) {
+        key_87_pressed = true;
+        
+    } else {
+        key_87_pressed = false;
+    }
+    
+};
+*/
+
+var Button = function (XPosition, YPosition, Width, Height, R1, G1, B1, R2, G2, B2,  Text, TextSize, XOffset, YOffset) {
+    this.XPosition = XPosition;
+    this.YPosition = YPosition;
+    this.Width = Width;
+    this.Height = Height;
+    this.Text = Text;
+    this.TextSize = TextSize;
+    this.XOffset = XOffset;
+    this.YOffset = YOffset;
+    this.R1 = R1;
+    this.G1 = G1;
+    this.B1 = B1;
+    this.R2 = R2;
+    this.G2 = G2;
+    this.B2 = B2;
+    
+};
+
+//Home
+var home = true; //true
+var one_player_pressed = false; //false
+var two_player = false; //false
+var settings = false; //false
+var guide = false; //false
+
+//Settings
+var back = false; //false
+var over_back = false;
+var difficulty = "Normal";
+var wall_collisions = false;
+var player1_colour = "White";
+var player2_colour = "Black";
+var button_timer = 0; //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
+
+//One player
+var player1_snake_stopped = true;
+
+//Game over
+var play_again = false;
+var go_home = false;
+
+Button.prototype.draw = function () {
+    
+    if (mouseX >= this.XPosition && mouseX <= this.XPosition + this.Width && mouseY >= this.YPosition && mouseY <= this.YPosition + this.Height) {
+        over_back = true;
+        
+        fill(this.R2, this.G2, this.B2);
+        rect(this.XPosition, this.YPosition, this.Width, this.Height);
+        
+        if (mouseIsPressed) {
+            if(this.Text !== "Back") {
+                
+                fill(this.R2 - 32, this.G2 - 32, this.B2 - 32);
+                
+            }
+            rect(this.XPosition, this.YPosition, this.Width, this.Height);
+            fill(this.R2, this.G2, this.B2);
+            rect(this.XPosition + 1.5, this.YPosition + 1.5, this.Width - 4, this.Height - 4);
+        }
+        
+        var button_text = this.Text;
+        if(mouse_released) {
+            
+            if(button_text === "1 Player") {
+                one_player_pressed = true;
+                home = false;
+                player1_snake_stopped = true;
+                keyCode = 37;
+                
+            } else if(button_text === "2 Player") {
+                two_player = true;
+                
+            } else if(button_text === "Settings") {
+                settings = true;
+                home = false;
+                
+            } else if(button_text === "Guide") {
+                guide = true;
+                
+            } else if(button_text === "Back") {
+                home = true;
+                settings = false;
+                button_timer = 0;
+                
+            } else if(button_text === "Easy") {
+                difficulty = "Easy";
+                
+            } else if(button_text === "Normal") {
+                difficulty = "Normal";
+                
+            } else if(button_text === "Hard") {
+                difficulty = "Hard";
+                
+            } else if(button_text === "On") {
+                wall_collisions = true;
+                
+            } else if(button_text === "Off") {
+                wall_collisions = false;
+                
+            } else if(button_text === "p1_red" && button_timer > 10) {
+                player1_colour = "Red";
+                
+            } else if(button_text === "p1_orange" && button_timer > 10) {
+                player1_colour = "Orange";
+                
+            } else if(button_text === "p1_yellow" && button_timer > 10) {
+                player1_colour = "Yellow";
+                
+            } else if(button_text === "p1_green") {
+                player1_colour = "Green";
+                
+            } else if(button_text === "p1_blue") {
+                player1_colour = "Blue";
+                
+            } else if(button_text === "p1_purple") {
+                player1_colour = "Purple";
+                
+            } else if(button_text === "p1_black") {
+                player1_colour = "Black";
+                
+            } else if(button_text === "p1_white") {
+                player1_colour = "White";
+                
+            } else if(button_text === "p2_red") {
+                player2_colour = "Red";
+                
+            } else if(button_text === "p2_orange") {
+                player2_colour = "Orange";
+                
+            } else if(button_text === "p2_yellow") {
+                player2_colour = "Yellow";
+                
+            } else if(button_text === "p2_green") {
+                player2_colour = "Green";
+                
+            } else if(button_text === "p2_blue") {
+                player2_colour = "Blue";
+                
+            } else if(button_text === "p2_purple") {
+                player2_colour = "Purple";
+                
+            } else if(button_text === "p2_black") {
+                player2_colour = "Black";
+                
+            } else if(button_text === "p2_white") {
+                player2_colour = "White";
+                
+            } else if(button_text === "Play again") {
+                play_again = true;
+                
+            } else if(button_text === "Home") {
+                go_home = true;
+                
+            }
+        }
+        
+    } else {
+        over_back = false;
+        
+        fill(this.R1, this.G1, this.B1);
+        rect(this.XPosition, this.YPosition, this.Width, this.Height);
+        
+    }
+    
+    fill(0, 0, 0);
+    textSize(this.TextSize);
+    text(this.Text, this.XPosition + this.XOffset, this.YPosition + this.YOffset);
+
+};
+}
+
+//Snake Segments
+{
+var side = "Right";
+var rotation = 0;
+var eyes = true;
+
+var Head = function(position, colour, draw_eyes) {
+    this.position = position;
+    this.colour = colour;
+    this.draw_eyes = draw_eyes;
+    
+};
+
+Head.prototype.draw = function() {
+    var x_position = 0;
+    var y_position = 0;
+    
+    if(rotation === 90) {
+        x_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+        y_position = -((this.position - 1) % 40) * 10 - 5;
+        
+    } else if (rotation === -90) {
+        x_position = -Math.ceil(this.position / 40) * 10 + 5;
+        y_position = ((this.position - 1) % 40) * 10 + 5;
+        
+        
+    } else {
+        x_position = ((this.position - 1) % 40) * 10 + 5;
+        y_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+    
+    }
+    
+    rotate(rotation);
+    
+    if(this.colour === "Black") {
+        fill(0, 0, 0); //Feature colour = white
+        
+    }
+    if(this.colour === "White") {
+        fill(255, 255, 255); //Feature colour = black
+        
+    }
+    if(this.colour === "Red") {
+        fill(220, 0, 0); //Feature colour = black
+        
+    }
+    if(this.colour === "Orange") {
+        fill(239, 124, 0); //Black
+        
+    }
+    if(this.colour === "Yellow") {
+        fill(239, 239, 0); //Black
+        
+    }
+    if(this.colour === "Green") {
+        fill(0, 112, 0); //Black
+        
+    }
+    if(this.colour === "Blue") {
+        fill(0, 0, 205); //White
+        
+    }
+    if(this.colour === "Purple") {
+        fill(95, 0, 104); //White
+        
+    }
+    if(this.colour === "Easter") {
+        
+        if(this.position % 7 === 0) {
+            fill(255, 0, 0);
+            
+        }
+        if(this.position % 7 === 1) {
+            fill(255, 127, 0);
+            
+        }
+        if(this.position % 7 === 2) {
+            fill(255, 255, 0);
+            
+        }
+        if(this.position % 7 === 3) {
+            fill(0, 255, 0);
+            
+        }
+        if(this.position % 7 === 4) {
+            fill(0, 0, 255);
+            
+        }
+        if(this.position % 7 === 5) {
+            fill(75, 0, 130);
+            
+        }
+        if(this.position % 7 === 6) {
+            fill(148, 0, 211);
+            
+        }
+    }
+    
+    ellipse (x_position, y_position , 10, 10);
+    
+    if(this.colour === "Black" || this.colour === "Blue" || this.colour === "Purple") {
+        fill(255, 255, 255);
+        stroke(255, 255, 255);
+        
+        
+    } else {
+        fill(0, 0, 0);
+        stroke(0, 0, 0);
+        
+    }
+    
+    if(side === "Right") {
+        
+        if(this.draw_eyes) {
+            
+            ellipse(x_position + 1.5, y_position - 1.5, 2, 2);
+            
+        } else {
+            
+            strokeWeight(0.4);
+            line(x_position + 0.4, y_position - 2.6, x_position + 2.6, y_position - 0.4);
+            line(x_position + 2.5, y_position - 3.2, x_position - 0.2, y_position);
+            
+        }
+        
+        
+        noFill();
+        strokeWeight(1);
+        arc(x_position + 2.5, y_position - 0.2, 8, 7, 75, 144);
+        noStroke();
+        
+    } else {
+        
+        if(this.draw_eyes) {
+            
+            ellipse(x_position - 1.5, y_position - 1.5, 2, 2);
+            
+        } else {
+            
+            strokeWeight(0.4);
+            line(x_position - 2.6, y_position - 2.6, x_position - 0.4, y_position - 0.4);
+            line(x_position - 0.5, y_position - 3.2, x_position - 3.2, y_position);
+           
+        }
+        
+        noFill();
+        strokeWeight(1);
+        arc(x_position - 2.5, y_position - 0.2, 8, 7, 25, 116);
+        noStroke();
+        
+    }
+    
+    rotate(-rotation);
+    
+};
+    
+var BodySegment = function(position, colour) {
+    this.position = position;
+    this.colour = colour;
+    
+};
+
+BodySegment.prototype.draw = function() {
+    
+    var x_position = ((this.position - 1) % 40) * 10 + 5;
+    var y_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+    
+    if(this.colour === "Black") {
+        fill(0, 0, 0); //Feature colour = white
+        
+    }
+    if(this.colour === "White") {
+        fill(255, 255, 255); //Feature colour = black
+        
+    }
+    if(this.colour === "Red") {
+        fill(220, 0, 0); //Feature colour = black
+        
+    }
+    if(this.colour === "Orange") {
+        fill(239, 124, 0); //Black
+        
+    }
+    if(this.colour === "Yellow") {
+        fill(239, 239, 0); //Black
+        
+    }
+    if(this.colour === "Green") {
+        fill(0, 112, 0); //Black
+        
+    }
+    if(this.colour === "Blue") {
+        fill(0, 0, 205); //White
+        
+    }
+    if(this.colour === "Purple") {
+        fill(95, 0, 104); //White
+        
+    }
+    if(this.colour === "Food") {
+        fill(117, 48, 60);
+        
+    }
+    if(this.colour === "Easter") {
+        
+        if(this.position % 7 === 0) {
+            fill(255, 0, 0);
+            
+        }
+        if(this.position % 7 === 1) {
+            fill(255, 127, 0);
+            
+        }
+        if(this.position % 7 === 2) {
+            fill(255, 255, 0);
+            
+        }
+        if(this.position % 7 === 3) {
+            fill(0, 255, 0);
+            
+        }
+        if(this.position % 7 === 4) {
+            fill(0, 0, 255);
+            
+        }
+        if(this.position % 7 === 5) {
+            fill(75, 0, 130);
+            
+        }
+        if(this.position % 7 === 6) {
+            fill(148, 0, 211);
+            
+        }
+    }
+    
+    ellipse (x_position, y_position , 10, 10);
+    
+};
+}
+
+//Home screen variables
+{
+    //Highest = 15190
+    var high_score_initials = ["BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS", "BJS"];
+    var high_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
+    var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
+    var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
+    var Instructions_button = new Button (293, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Guide", 18, 18 , 25);
+    var home_snake_segments = [];
+    home_snake_segments.push(new Head(314, "White", true));
+    for(var i = 1; i < 28; i++) {
+        
+        home_snake_segments.push(new BodySegment(314 - i, "White"));
+        
+    }
+    var number = 0;
+    var right = true;
+    var down = false;
+    var left = false;
+    var up = false;
+    var key_codes = [39];
+    var easter_food = new BodySegment(673, "Food");
+    var draw_easter_food = false;
+    var speed = 10; //Smaller is faster, 1 is fastest
+    var easter_eat = false;
+    var R_val = [255, 255, 255, 255, 255, 255, 255, 255, 255, 192, 128, 64, 0, 0, 0, 0, 0, 19, 38, 57, 75, 116, 157, 198, 238, 243, 247, 251]; //Unused
+    var G_val = [0, 41, 83, 124, 165, 188, 211, 234, 255, 224, 192, 160, 128, 96, 64, 32, 0, 0, 0, 0, 0, 33, 65, 98, 130, 98, 65, 33]; //Unused
+    var B_val = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 128, 192, 255, 224, 193, 162, 130, 157, 184, 211, 238, 179, 119, 60]; //Unused
+    var home_crash = false;
+    var one_player = false;
+    
+}
+//Settings screen variables
+{
+    var back_button = new Button (6, 13, 40, 34, 140, 140, 140, 141, 141, 141, "Back", 0, 10, 20);
+    var difficulty_easy = new Button (8, 125, 60, 30, 90, 90, 90, 106, 106, 106, "Easy", 18, 10, 21);
+    var difficulty_normal = new Button (69, 125, 60, 30, 90, 90, 90, 106, 106, 106, "Normal", 18, 1, 21);
+    var difficulty_hard = new Button (130, 125, 60, 30, 90, 90, 90, 106, 106, 106, "Hard", 18, 11, 21);
+    var wall_collisions_on = new Button (239, 125, 60, 30, 90, 90, 90, 106, 106, 106, "On", 18, 18, 21);
+    var wall_collisions_off = new Button (301, 125, 60, 30, 90, 90, 90, 106, 106, 106, "Off", 18, 17, 21);
+    var player1_red = new Button (5, 263, 30, 30, 220, 0, 0, 245, 16, 16, "p1_red", 0, 2, 21);
+    var player1_orange = new Button (37, 263, 30, 30, 239, 124, 0, 255, 140, 16, "p1_orange", 0, 2, 21);
+    var player1_yellow = new Button (69, 263, 30, 30, 239, 239, 0, 255, 255, 16, "p1_yellow", 0, 2, 21);
+    var player1_green = new Button (101, 263, 30, 30, 0, 112, 0, 16, 128, 16, "p1_green", 0, 2, 21);
+    var player1_blue = new Button (133, 263, 30, 30, 0, 0, 205, 16, 16, 221, "p1_blue", 0, 2, 21);
+    var player1_purple = new Button (165, 263, 30, 30, 95, 0, 140, 111, 16, 156, "p1_purple", 0, 2, 21);
+    var player1_black = new Button (69, 327, 30, 30, 0, 0, 0, 45, 45, 45, "p1_black", 0, 2, 21);
+    var player1_white = new Button (101, 327, 30, 30, 255, 255, 255, 239, 239, 239, "p1_white", 0, 2, 21);
+    var player2_red = new Button (205, 263, 30, 30, 220, 0, 0, 245, 16, 16, "p2_red", 0, 2, 21);
+    var player2_orange = new Button (237, 263, 30, 30, 239, 124, 0, 255, 140, 16, "p2_orange", 0, 2, 21);
+    var player2_yellow = new Button (269, 263, 30, 30, 239, 239, 0, 255, 255, 16, "p2_yellow", 0, 2, 21);
+    var player2_green = new Button (301, 263, 30, 30, 0, 112, 0, 16, 128, 16, "p2_green", 0, 2, 21);
+    var player2_blue = new Button (333, 263, 30, 30, 0, 0, 205, 16, 16, 221, "p2_blue", 0, 2, 21);
+    var player2_purple = new Button (365, 263, 30, 30, 95, 0, 140, 111, 16, 156, "p2_purple", 0, 2, 21);
+    var player2_black = new Button (269, 327, 30, 30, 0, 0, 0, 45, 45, 45, "p2_black", 0, 2, 21);
+    var player2_white = new Button (301, 327, 30, 30, 255, 255, 255, 239, 239, 239, "p2_white", 0, 2, 21);
+    var difficulty_indicator_x = 99;
+    var difficulty_indicator_speed = 0;
+    var wall_collisions_indicator_x = 331;
+    var wall_collisions_indicator_speed = 0;
+    var player1_colour_indicator_x = 0;
+    var player1_colour_indicator_y = 0;
+    var player1_colour_indicator_speed = 0;
+    var player2_colour_indicator_x = 0;
+    var player2_colour_indicator_y = 0;
+    var player2_colour_indicator_speed = 0;
+    
+}
+//One player variables
+{
+ var score = 0;
+ var one_player_snake = [];
+ one_player_snake.push(new Head(820, "White", true));
+ one_player_snake.push(new BodySegment(819, "White"));
+ one_player_snake.push(new BodySegment(818, "White"));
+ var one_player_crash = false;
+ var available_positions = [];
+ var old_positions = [];
+ var covered_positions = [818, 819, 820];
+ for(var i = 81; i < 1601; i++) {
+    
+    if(i !== 820 && i !== 819 && i !== 818) {
+        
+        available_positions.push(i);
+        
+    }
+    
+ }
+ var random_number = floor(random(81, available_positions.length + 0.9));
+ var food = new BodySegment(random_number, "Food");
+ var eat = false;
+ var old_tail_position = 818;
+ var add_length = false;
+ var perfect_game = false;
+ 
+}
+//End game variables
+{
+    var game_over = false; //false
+    var end_delay = -40; //-40
+    var delay_time = 80; // 80
+    var play_again_button = new Button (87, 299, 110, 45, 78, 87, 92, 90, 99, 104, "Play again", 21, 6, 29);
+    var home_screen_button = new Button (204, 299, 110, 45, 78, 87, 92, 90, 99, 104, "Home", 21, 27, 29);
+    var point_plural = "s";
+    var initials_text = "";
+    var initials = ["  ", "  ", "  "];
+    var place = 0;
+    //perfect_game = true;
+    
+}
+
+//Other functions
+{
+//Game grid
+var game_grid = function() {
+    //grid
+    stroke(121, 156, 26);
+    //Virtical
+    for(var i = 0; i < 400; i++) {
+        line(i*10,20,i*10,400);
+    }
+    //Horizontal
+    for(var i = 2; i < 400; i++) {
+        line(0,i*10,400,i*10);
+    }
+    noStroke();
+};
+
+//Home grid
+var home_grid = function() {
+    //grid
+    stroke(121, 156, 26);
+    //Virtical
+    for(var i = 0; i < 400; i++) {
+        line(i*10,0,i*10,400);
+    }
+    //Horizontal
+    for(var i = 0; i < 400; i++) {
+        line(0,i*10,400,i*10);
+    }
+    noStroke();
+};
+
+var update_snake = function(snake, top_row) {
+    var old_head = snake[0].position;
+    
+    if(key_codes[0] === 37 && !right) {
+        left = true;
+        up = false;
+        right = false;
+        down = false;
+        side = "Left";
+        rotation = 0;
+        
+    } else if (key_codes[0] === 38 && !down) {
+        if(right) {
+            rotation = -90;
+            
+        }
+        if(left) {
+            rotation = 90;
+            
+        }
+        up = true;
+        left = false;
+        right = false;
+        down = false;
+        
+    } else if (key_codes[0] === 39 && !left) {
+        right = true;
+        left = false;
+        up = false;
+        down = false;
+        side = "Right";
+        rotation = 0;
+        
+    } else if (key_codes[0] === 40 && !up) {
+        if(right) {
+            rotation = 90;
+            
+        }
+        if(left) {
+            rotation = -90;
+            
+        }
+        down = true;
+        left = false;
+        up = false;
+        right = false;
+        
+    }
+    
+    key_codes.shift();
+    
+    for(var i = snake.length - 1; i > 0; i--) {
+        
+        snake[i].position = snake[i - 1].position;
+        
+    }
+    
+    if(right) {
+       
+       snake[0].position++;
+        
+    } else if(down) {
+        
+        snake[0].position += 40;
+        
+    } else if(left) {
+        
+        snake[0].position--;
+        
+    } else if(up) {
+        
+        snake[0].position -= 40;
+        
+    }
+    
+    if(old_head % 40 === 0 && snake[0].position % 40 === 1) {
+        
+        snake[0].position -= 40;
+        
+    }
+    if(old_head % 40 === 1 && snake[0].position % 40 === 0) {
+        
+        snake[0].position += 40;
+        
+    }
+    if(Math.ceil(old_head / 40) === top_row && Math.ceil(snake[0].position / 40) === (top_row - 1)) {
+        
+        snake[0].position += (1600 - (top_row - 1) * 40);
+        
+    }
+    if(Math.ceil(old_head / 40) === 40 && Math.ceil(snake[0].position / 40) === 41) {
+        
+        snake[0].position -= (1600 - (top_row - 1) * 40);
+        
+    }
+};
+
+var type_home_crash_message = function() {
+    
+    textSize(12);
+    fill(255, 255, 255);
+    if(number >= 35) {
+        text("G", 18, 145);   
+    }
+    if(number >= 50) {
+        text("o", 27, 145);
+    }
+    if(number >= 60) {
+        text("o", 34, 145);
+    }
+    if(number >= 70) {
+        text("d", 41, 145);
+    }
+    if(number >= 110) {
+        text("l",50, 145);
+    }
+    if(number >= 125) {
+        text("u", 53, 145);
+    }
+    if(number >= 135) {
+        text("c", 60, 145);
+    }
+    if(number >= 145) {
+        text("k", 66, 145);
+    }
+    if(number >= 200) {
+        text("i", 75, 145);
+    }
+    if(number >= 215) {
+        text("n", 78, 145);
+    }
+    if(number >= 230) {
+        text("t", 88, 145);
+    }
+    if(number >= 235) {
+        text("h", 92, 145);
+    }
+    if(number >= 240) {
+        text("e", 99, 145);
+    }
+    if(number >= 265) {
+        text("a", 18, 158);
+    }
+    if(number >= 280) {
+        text("c", 24.5, 158);
+    }
+    if(number >= 300) {
+        text("t", 31, 158);
+    }
+    if(number >= 310) {
+        text("u", 34.5, 158);
+    }
+    if(number >= 325) {
+        text("a", 41, 158);
+    }
+    if(number >= 335) {
+        text("l", 48, 158);
+    }
+    if(number >= 350) {
+        text("g", 53, 158);
+    }
+    if(number >= 365) {
+        text("a", 60, 158);
+    }
+    if(number >= 375) {
+        text("m", 67, 158);
+    }
+    if(number >= 385) {
+        text("e", 77, 158);
+    }
+    if(number >= 390) {
+        text(".", 84, 158);
+    }
+    if(number >= 395) {
+        text(".", 87, 158);
+    }
+    if(number >= 400) {
+        text(".", 90, 158);
+    }
+    if(number >= 425) {
+        text("Y", 18, 171);
+    }
+    if(number >= 435) {
+        text("o", 24.5, 171);
+    }
+    if(number >= 445) {
+        text("u", 31, 171);
+    }
+    if(number >= 460) {
+        text("w", 41, 171);
+    }
+    if(number >= 470) {
+        text("i", 50, 171);
+    }
+    if(number >= 485) {
+        text("l", 53, 171);
+    }
+    if(number >= 490) {
+        text("l", 56, 171);
+    }
+    if(number >= 510) {
+        text("n", 61, 171);
+    }
+    if(number >= 525) {
+        text("e", 68, 171);
+    }
+    if(number >= 535) {
+        text("e", 75, 171);
+    }
+    if(number >= 550) {
+        text("d", 82, 171);
+    }
+    if(number >= 570) {
+        text("i", 92, 171);
+    }
+    if(number >= 580) {
+        text("t", 95, 171);
+    }
+    if(number >= 610) {
+        text("!", 98.5, 171);
+    }
+};
+
+var reset_one_player_snake = function() {
+    score = 0;
+    one_player_snake = [];
+    one_player_snake.push(new Head(820, "White", true));
+    one_player_snake.push(new BodySegment(819, "White"));
+    one_player_snake.push(new BodySegment(818, "White"));
+    one_player_crash = false;
+    available_positions = [];
+    old_positions = [];
+    covered_positions = [818, 819, 820];
+    for(var i = 81; i < 1601; i++) {
+        
+        if(i !== 820 && i !== 819 && i !== 818) {
+            
+            available_positions.push(i);
+            
+        }
+        
+    }
+    random_number = floor(random(81, available_positions.length + 0.9));
+    food = new BodySegment(random_number, "Food");
+    eat = false;
+    old_tail_position = 818;
+    add_length = false;
+    perfect_game = false;
+    player1_snake_stopped = true;
+    keyCode = 37;
+    rotation = 0;
+    side = "Right";
+    //right = true;
+    game_over = false;
+    left = false;
+    initials_text = "";
+    initials = ["  ", "  ", "  "];
+    end_delay = -40;
+    
+};
+
+var reset_home_snake = function () {
+    
+    key_codes = [39];
+    home_snake_segments = [];
+    home_snake_segments.push(new Head(314, player1_colour, true));
+    for(var i = 1; i < 28; i++) {
+        
+        home_snake_segments.push(new BodySegment(314 - i, player1_colour));
+        
+    }
+    draw_easter_food = false;
+    right = true;
+    rotation = 0;
+    side = "Right";
+    left = false;
+    easter_eat = false;
+    home_crash = false;
+};
+
+var add_initial = function () {
+    
+    if(pressed_key === 48) {
+        initials[place] = '0';
+        
+    }
+    if(pressed_key === 49) {
+        initials[place] = '1';
+        
+    }
+    if(pressed_key === 50) {
+        initials[place] = '2';
+        
+    }
+    if(pressed_key === 51) {
+        initials[place] = '3';
+        
+    }
+    if(pressed_key === 52) {
+        initials[place] = '4';
+        
+    }
+    if(pressed_key === 53) {
+        initials[place] = '5';
+        
+    }
+    if(pressed_key === 54) {
+        initials[place] = '6';
+        
+    }
+    if(pressed_key === 55) {
+        initials[place] = '7';
+        
+    }
+    if(pressed_key === 56) {
+        initials[place] = '8';
+        
+    }
+    if(pressed_key === 57) {
+        initials[place] = '9';
+        
+    }
+    if(pressed_key === 65) {
+        initials[place] = 'A';
+        
+    }
+    if(pressed_key === 66) {
+        initials[place] = 'B';
+        
+    }
+    if(pressed_key === 67) {
+        initials[place] = 'C';
+        
+    }
+    if(pressed_key === 68) {
+        initials[place] = 'D';
+        
+    }
+    if(pressed_key === 69) {
+        initials[place] = 'E';
+        
+    }
+    if(pressed_key === 70) {
+        initials[place] = 'F';
+        
+    }
+    if(pressed_key === 71) {
+        initials[place] = 'G';
+        
+    }
+    if(pressed_key === 72) {
+        initials[place] = 'H';
+        
+    }
+    if(pressed_key === 73) {
+        initials[place] = 'I';
+        
+    }
+    if(pressed_key === 74) {
+        initials[place] = 'J';
+        
+    }
+    if(pressed_key === 75) {
+        initials[place] = 'K';
+        
+    }
+    if(pressed_key === 76) {
+        initials[place] = 'L';
+        
+    }
+    if(pressed_key === 77) {
+        initials[place] = 'M';
+        
+    }
+    if(pressed_key === 78) {
+        initials[place] = 'N';
+        
+    }
+    if(pressed_key === 79) {
+        initials[place] = 'O';
+        
+    }
+    if(pressed_key === 80) {
+        initials[place] = 'P';
+        
+    }
+    if(pressed_key === 81) {
+        initials[place] = 'Q';
+        
+    }
+    if(pressed_key === 82) {
+        initials[place] = 'R';
+        
+    }
+    if(pressed_key === 83) {
+        initials[place] = 'S';
+        
+    }
+    if(pressed_key === 84) {
+        initials[place] = 'T';
+        
+    }
+    if(pressed_key === 85) {
+        initials[place] = 'U';
+        
+    }
+    if(pressed_key === 86) {
+        initials[place] = 'V';
+        
+    }
+    if(pressed_key === 87) {
+        initials[place] = 'W';
+        
+    }
+    if(pressed_key === 88) {
+        initials[place] = 'X';
+        
+    }
+    if(pressed_key === 89) {
+        initials[place] = 'Y';
+        
+    }
+    if(pressed_key === 90) {
+        initials[place] = 'Z';
+        
+    }
+    if(pressed_key === 8) {
+        initials[place - 1] = "  ";
+        
+        
+    }
+    
+    place = 0;
+    for(var i = 0; i < initials.length; i++) {
+        
+        if(initials[i] !== "  " && place !== 3) {
+            place++;
+            
+        }
+        
+    }
+    
+    key_pressed = false;
+};
+
+var add_high_score = function() {
+    
+    for(var i = 0; i < high_scores.length; i++) {
+        
+        if(high_scores[i] < score) {
+            
+            high_scores.splice(i, 0, score);
+            high_scores.splice(10, 1);
+            score = 0;
+            high_score_initials.splice(i, 0, initials_text);
+            high_score_initials.splice(10, 1);
+            
+        }
+    }
+};
+}
+
+//Screens
+var home_screen = function() {
+    number++;
+    
+    background (32, 138, 35);
+    textSize(68);
+    fill(0, 0, 0);
+    text("Snake", 105, 60);
+    textSize(12);
+    
+    fill(69, 79, 84);
+    rect(120, 100, 160, 210, 8);
+    fill(235, 205, 12);
+    textSize(18);
+    text("High Scores", 151, 120);
+    fill(0, 0, 0);
+    rect(120, 127, 160, 2);
+    fill(235, 205, 12);
+    textSize(12);
+    
+    textAlign(CENTER);
+
+    //High Score text
+    for(var i = 0; i < 10; i++) {
+     
+        text("#" + (i + 1), 146, i*18 + 142);
+        text(high_score_initials[i], 190, i*18 + 142);
+        text(high_scores[i], 241, i*18 + 142);
+        
+    }
+    textAlign(LEFT);
+    
+    One_player_button.draw();
+    Two_player_button.draw();
+    Settings_button.draw();
+    Instructions_button.draw();
+    
+    var add_code = true;
+    for(var i = 0; i < key_codes.length; i++) {
+        
+        if(key_codes[i] === keyCode) {
+            add_code = false;
+            
+        }
+    }
+    
+    if(add_code) {
+        
+        key_codes.push(keyCode);
+        
+    }
+    
+    if(!right) {
+        draw_easter_food = true;
+        
+    }
+    if(draw_easter_food && !easter_eat) {
+        
+        easter_food.draw();
+        
+    }
+    
+    if(number > speed && !home_crash) {
+        number = 0;
+        
+        update_snake(home_snake_segments, 1);
+        
+    }
+    
+    if(home_snake_segments[0].colour !== player1_colour && !easter_eat) {
+        
+        for(var i = 0; i < home_snake_segments.length; i++) {
+            
+            home_snake_segments[i].colour = player1_colour;
+            
+        }
+    }
+    
+    //Draw the home snake
+    for(var i = home_snake_segments.length - 1; i >= 0; i--) {
+        
+        home_snake_segments[i].draw();
+        
+    }
+    
+    if(home_snake_segments[0].position === 673) {
+        easter_eat = true;
+        
+    }
+    if(easter_eat) {
+        
+        for(var i = 0; i < home_snake_segments.length; i++) {
+            home_snake_segments[i].colour = "Easter";
+            
+        }
+    }
+    
+    for(var i = 1; i < home_snake_segments.length; i++) {
+        
+        if(home_snake_segments[0].position === home_snake_segments[i].position) {
+            home_crash = true;
+            eyes = false;
+            
+        }
+    }
+    if(home_crash) {
+        
+        home_snake_segments[0].draw_eyes = false;
+        type_home_crash_message();
+        
+    }
+    
+    if(one_player_pressed) {
+        one_player_pressed = false;
+        one_player = true;
+        
+        reset_one_player_snake();
+        
+    }
+    
+};
+
+var settings_screen = function() {
+    button_timer++;
+    
+    background(140, 140, 140);
+    textSize(55);
+    fill(0, 0, 0);
+    text("Settings", 99, 50);
+    
+    textSize(25);
+    text("Difficulty", 53, 112);
+    text("Wall Collisions", 219.5, 112);
+    text("Player 1 Colour", 13.5, 250);
+    text("Player 2 Colour", 213.5, 250);
+    
+    difficulty_easy.draw();
+    difficulty_normal.draw();
+    difficulty_hard.draw();
+    wall_collisions_on.draw();
+    wall_collisions_off.draw();
+    player1_red.draw();
+    player1_orange.draw();
+    player1_yellow.draw();
+    player1_green.draw();
+    player1_blue.draw();
+    player1_purple.draw();
+    player1_black.draw();
+    player1_white.draw();
+    player2_red.draw();
+    player2_orange.draw();
+    player2_yellow.draw();
+    player2_green.draw();
+    player2_blue.draw();
+    player2_purple.draw();
+    player2_black.draw();
+    player2_white.draw();
+    
+    back_button.draw();
+    
+    //Back arrow
+    strokeWeight(4);
+    if(over_back) {
+        
+        stroke(70, 70, 70);
+        
+    } else {
+        
+        stroke(0, 0, 0);
+        
+    }
+    line(20, 18, 10, 30);
+    line(20, 42, 10, 30);
+    line(40, 30, 11, 30);
+    noStroke();
+    
+    //Difficulty indicator
+    if(difficulty === "Easy") {
+        speed = 15;
+        
+        if(difficulty_indicator_x >= 38) {
+            
+            if(difficulty_indicator_x < 58) {
+                difficulty_indicator_speed = -sqrt(difficulty_indicator_x - 38);
+                
+            } else if(difficulty_indicator_speed > -10) {
+                difficulty_indicator_speed -= 5;
+                
+            } else {
+                difficulty_indicator_speed = -10;
+                
+            }
+            
+        } else {
+            difficulty_indicator_speed = 0;
+            
+        }
+        
+    } else if(difficulty === "Normal") {
+        speed = 10;
+        
+        //Need small gap in the middle for indicator to stop changing value
+        if(difficulty_indicator_x < 99) {
+            
+            if(difficulty_indicator_x > 78) {
+                difficulty_indicator_speed = sqrt(99 - difficulty_indicator_x);
+                
+            } else if(difficulty_indicator_speed < 10) {
+                difficulty_indicator_speed += 5;
+                
+            } else {
+                difficulty_indicator_speed = 10;
+                
+            }
+            
+        } else if(difficulty_indicator_x > 100) {
+            
+            if(difficulty_indicator_x < 119) {
+                difficulty_indicator_speed = -sqrt(difficulty_indicator_x - 99);
+                
+            } else if(difficulty_indicator_speed < -10) {
+                difficulty_indicator_speed -= 5;
+                
+            } else {
+                difficulty_indicator_speed = -10;
+                
+            }
+            
+        } else {
+            difficulty_indicator_speed = 0;
+            
+        }
+        
+    } else if(difficulty === "Hard") {
+        speed = 5;
+        
+        if(difficulty_indicator_x <= 160) {
+            
+            if(difficulty_indicator_x > 140) {
+                difficulty_indicator_speed = sqrt(160 - difficulty_indicator_x);
+                
+            } else if(difficulty_indicator_speed < 10) {
+                difficulty_indicator_speed += 5;
+                
+            } else {
+                difficulty_indicator_speed = 10;
+                
+            }
+            
+        } else {
+            difficulty_indicator_speed = 0;
+            
+        }
+        
+    }
+    difficulty_indicator_x += difficulty_indicator_speed;
+    
+    fill(0, 0, 0);
+    triangle(difficulty_indicator_x, 160, difficulty_indicator_x - 15, 180, difficulty_indicator_x + 15, 180);
+    
+    if(wall_collisions) {
+        
+        if(wall_collisions_indicator_x >= 269) {
+            
+            if(wall_collisions_indicator_x < 289) {
+                wall_collisions_indicator_speed = -sqrt(wall_collisions_indicator_x - 269);
+                
+            } else if(wall_collisions_indicator_speed > -10) {
+                wall_collisions_indicator_speed -= 5;
+                
+            } else {
+                wall_collisions_indicator_speed = -10;
+                
+            }
+            
+        } else {
+            wall_collisions_indicator_speed = 0;
+            
+        }
+    } else {
+        
+        if(wall_collisions_indicator_x <= 331) {
+            
+            if(wall_collisions_indicator_x > 311) {
+                wall_collisions_indicator_speed = sqrt(331 - wall_collisions_indicator_x);
+                
+            } else if(wall_collisions_indicator_speed < 10) {
+                wall_collisions_indicator_speed += 5;
+                
+            } else {
+                wall_collisions_indicator_speed = 10;
+                
+            }
+            
+        } else {
+            wall_collisions_indicator_speed = 0;
+            
+        }
+    }
+    wall_collisions_indicator_x +=wall_collisions_indicator_speed;
+    
+    triangle(wall_collisions_indicator_x, 160, wall_collisions_indicator_x - 15, 180, wall_collisions_indicator_x + 15, 180);
+    
+    //Player1 colours
+    //Jump between colours and shades
+    if(player1_colour_indicator_y !== 362 && (player1_colour === "Black" || player1_colour === "White")) {
+        player1_colour_indicator_y = 362;
+        
+        if(player1_colour === "Black") {
+            player1_colour_indicator_x = 84;
+            
+        }
+        if(player1_colour === "White") {
+            player1_colour_indicator_x = 116;
+            
+        }
+        
+    } else if(player1_colour_indicator_y !== 298 && player1_colour !== "Black" && player1_colour !== "White" ) {
+        player1_colour_indicator_y = 298;
+        
+        if(player1_colour === "Red") {
+            player1_colour_indicator_x = 20;
+            
+        }
+        if(player1_colour === "Orange") {
+            player1_colour_indicator_x = 52;
+            
+        }
+        if(player1_colour === "Yellow") {
+            player1_colour_indicator_x = 84;
+            
+        }
+        if(player1_colour === "Green") {
+            player1_colour_indicator_x = 116;
+            
+        }
+        if(player1_colour === "Blue") {
+            player1_colour_indicator_x = 148;
+            
+        }
+        if(player1_colour === "Purple") {
+            player1_colour_indicator_x = 180;
+            
+        }
+    }
+    
+    if(player1_colour_indicator_y === 362) {
+        
+        if(player1_colour === "Black") {
+            
+            if(player1_colour_indicator_x >= 84) {
+                
+                if(player1_colour_indicator_x < 99) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 84);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+            
+        } else if(player1_colour === "White") {
+            
+            if(player1_colour_indicator_x <= 116) {
+                
+                if(player1_colour_indicator_x > 101) {
+                    player1_colour_indicator_speed = sqrt(116 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+                
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        }
+        
+    } else {
+        
+        if(player1_colour === "Red") {
+            
+            if(player1_colour_indicator_x >= 20) {
+                
+                if(player1_colour_indicator_x < 35) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 20);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        } else if(player1_colour === "Orange") {
+            
+            if(player1_colour_indicator_x >= 52) {
+                
+                if(player1_colour_indicator_x < 67) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 52);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player1_colour_indicator_x <= 51) {
+                
+                if(player1_colour_indicator_x > 37) {
+                    player1_colour_indicator_speed = sqrt(52 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        } else if(player1_colour === "Yellow") {
+            
+            if(player1_colour_indicator_x >= 84) {
+                
+                if(player1_colour_indicator_x < 99) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 84);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player1_colour_indicator_x <= 83) {
+                
+                if(player1_colour_indicator_x > 69) {
+                    player1_colour_indicator_speed = sqrt(84 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        } else if(player1_colour === "Green") {
+            
+            if(player1_colour_indicator_x >= 116) {
+                
+                if(player1_colour_indicator_x < 131) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 116);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player1_colour_indicator_x <= 115) {
+                
+                if(player1_colour_indicator_x > 101) {
+                    player1_colour_indicator_speed = sqrt(116 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        }  else if(player1_colour === "Blue") {
+            
+            if(player1_colour_indicator_x >= 148) {
+                
+                if(player1_colour_indicator_x < 163) {
+                    player1_colour_indicator_speed = -sqrt(player1_colour_indicator_x - 148);
+                    
+                } else if(player1_colour_indicator_speed > -10) {
+                    player1_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player1_colour_indicator_x <= 147) {
+                
+                if(player1_colour_indicator_x > 133) {
+                    player1_colour_indicator_speed = sqrt(148 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        } else if(player1_colour === "Purple") {
+            
+            if(player1_colour_indicator_x <= 180) {
+                
+                if(player1_colour_indicator_x > 165) {
+                    player1_colour_indicator_speed = sqrt(180 - player1_colour_indicator_x);
+                    
+                } else if(player1_colour_indicator_speed < 10) {
+                    player1_colour_indicator_speed += 5;
+                    
+                } else {
+                    player1_colour_indicator_speed = 10;
+                    
+                }
+                
+            } else {
+                player1_colour_indicator_speed = 0;
+                
+            }
+        }
+    }
+    player1_colour_indicator_x += player1_colour_indicator_speed;
+    
+    triangle(player1_colour_indicator_x, player1_colour_indicator_y, player1_colour_indicator_x - 15, player1_colour_indicator_y + 20, player1_colour_indicator_x + 15, player1_colour_indicator_y + 20);
+    
+    //Player2 colour
+    //Jump between colours and shades
+    if(player2_colour_indicator_y !== 362 && (player2_colour === "Black" || player2_colour === "White")) {
+        player2_colour_indicator_y = 362;
+        
+        if(player2_colour === "Black") {
+            player2_colour_indicator_x = 284;
+            
+        }
+        if(player2_colour === "White") {
+            player2_colour_indicator_x = 316;
+            
+        }
+        
+    } else if(player2_colour_indicator_y !== 298 && player2_colour !== "Black" && player2_colour !== "White" ) {
+        player2_colour_indicator_y = 298;
+        
+        if(player2_colour === "Red") {
+            player2_colour_indicator_x = 220;
+            
+        }
+        if(player2_colour === "Orange") {
+            player2_colour_indicator_x = 252;
+            
+        }
+        if(player2_colour === "Yellow") {
+            player2_colour_indicator_x = 284;
+            
+        }
+        if(player2_colour === "Green") {
+            player2_colour_indicator_x = 316;
+            
+        }
+        if(player2_colour === "Blue") {
+            player2_colour_indicator_x = 348;
+            
+        }
+        if(player2_colour === "Purple") {
+            player2_colour_indicator_x = 380;
+            
+        }
+    }
+    
+    if(player2_colour_indicator_y === 362) {
+        
+        if(player2_colour === "Black") {
+            
+            if(player2_colour_indicator_x >= 284) {
+                
+                if(player2_colour_indicator_x < 299) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 284);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+            
+        } else if(player2_colour === "White") {
+            
+            if(player2_colour_indicator_x <= 316) {
+                
+                if(player2_colour_indicator_x > 301) {
+                    player2_colour_indicator_speed = sqrt(316 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+                
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        }
+        
+    } else {
+        
+        if(player2_colour === "Red") {
+            
+            if(player2_colour_indicator_x >= 220) {
+                
+                if(player2_colour_indicator_x < 235) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 220);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        } else if(player2_colour === "Orange") {
+            
+            if(player2_colour_indicator_x >= 252) {
+                
+                if(player2_colour_indicator_x < 267) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 252);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player2_colour_indicator_x <= 251) {
+                
+                if(player2_colour_indicator_x > 237) {
+                    player2_colour_indicator_speed = sqrt(252 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        } else if(player2_colour === "Yellow") {
+            
+            if(player2_colour_indicator_x >= 284) {
+                
+                if(player2_colour_indicator_x < 299) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 284);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player2_colour_indicator_x <= 283) {
+                
+                if(player2_colour_indicator_x > 269) {
+                    player2_colour_indicator_speed = sqrt(284 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        } else if(player2_colour === "Green") {
+            
+            if(player2_colour_indicator_x >= 316) {
+                
+                if(player2_colour_indicator_x < 331) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 316);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player2_colour_indicator_x <= 315) {
+                
+                if(player2_colour_indicator_x > 301) {
+                    player2_colour_indicator_speed = sqrt(316 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        }  else if(player2_colour === "Blue") {
+            
+            if(player2_colour_indicator_x >= 348) {
+                
+                if(player2_colour_indicator_x < 363) {
+                    player2_colour_indicator_speed = -sqrt(player2_colour_indicator_x - 348);
+                    
+                } else if(player2_colour_indicator_speed > -10) {
+                    player2_colour_indicator_speed -= 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = -10;
+                    
+                }
+                
+            } else if(player2_colour_indicator_x <= 347) {
+                
+                if(player2_colour_indicator_x > 333) {
+                    player2_colour_indicator_speed = sqrt(348 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        } else if(player2_colour === "Purple") {
+            
+            if(player2_colour_indicator_x <= 380) {
+                
+                if(player2_colour_indicator_x > 365) {
+                    player2_colour_indicator_speed = sqrt(380 - player2_colour_indicator_x);
+                    
+                } else if(player2_colour_indicator_speed < 10) {
+                    player2_colour_indicator_speed += 5;
+                    
+                } else {
+                    player2_colour_indicator_speed = 10;
+                    
+                }
+                
+            } else {
+                player2_colour_indicator_speed = 0;
+                
+            }
+        }
+    }
+    player2_colour_indicator_x += player2_colour_indicator_speed;
+    
+    triangle(player2_colour_indicator_x, player2_colour_indicator_y, player2_colour_indicator_x - 15, player2_colour_indicator_y + 20, player2_colour_indicator_x + 15, player2_colour_indicator_y + 20);
+    
+};
+
+var one_player_screen = function() {
+    number++;
+    background (32, 138, 35);
+    fill(0, 0, 0);
+    rect(0, 0, 400, 20);
+    fill(235, 205, 12);
+    textSize(12);
+    text("Score: " + score, 5, 14);
+    if(high_scores[0] > 0) {
+        
+        textAlign(RIGHT);
+        text("Highest Score: " + high_scores[0], 395, 14);
+        textAlign(LEFT);
+        
+    }
+    
+    if(one_player_snake.size === 1520) {
+        perfect_game = true;
+        
+    }
+    
+    old_positions = available_positions;
+    available_positions = [];
+    for(var i = 0; i < old_positions.length; i++) {
+        
+        if(old_positions[i] !== one_player_snake[0].position) {
+            
+            available_positions.push(old_positions[i]);
+            
+        } else {
+            covered_positions.push(old_positions[i]);
+            
+        }
+        
+    }
+    
+    var add_code = true;
+    for(var i = 0; i < key_codes.length; i++) {
+        
+        if(key_codes[i] === keyCode) {
+            add_code = false;
+            
+        }
+    }
+    
+    if(add_code) {
+        
+        key_codes.push(keyCode);
+        
+    }
+    
+    if(player1_snake_stopped && (keyCode === 38 || keyCode === 39 || keyCode === 40) && !one_player_crash) {
+        number = 0;
+        player1_snake_stopped = false;
+        key_codes.shift();
+        key_codes.shift();
+        
+    } else if (player1_snake_stopped) {
+        rotation = 0;
+        
+    }
+    
+    //Update snake position
+    if(number > speed && !player1_snake_stopped && !one_player_crash) {
+        number = 0;
+        
+        update_snake(one_player_snake, 3);
+        
+        if(add_length) {
+            add_length = false;
+            one_player_snake.push(new BodySegment(old_tail_position, player1_colour));
+            
+        } else {
+            
+            available_positions.push(covered_positions[0]);
+            covered_positions.shift();
+            
+        }
+        
+    }
+    
+    if(one_player_snake[0].colour !== player1_colour) {
+        
+        for(var i = 0; i < one_player_snake.length; i++) {
+            
+            one_player_snake[i].colour = player1_colour;
+            
+        }
+    }
+    
+    for(var i = one_player_snake.length - 1; i >= 0; i--) {
+        
+        if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
+            one_player_crash = true;
+            player1_snake_stopped = true;
+            
+        }
+        
+        one_player_snake[i].draw();
+        
+    }
+    
+    if(wall_collisions && ((one_player_snake[0].position % 40 === 1) && key_codes[0] === 37 || (one_player_snake[0].position % 40 === 0) && key_codes[0] === 39 || (Math.ceil(one_player_snake[0].position / 40) === 3) && key_codes[0] === 38 || (Math.ceil(one_player_snake[0].position / 40) === 40) && key_codes[0] === 40)) {
+        one_player_crash = true;
+        //player1_snake_stopped = true;
+        
+    }
+    
+    //Eat
+    if(one_player_snake[0].position === food.position) {
+        random_number = floor(random(81, available_positions.length + 0.9));
+        eat = true;
+        
+    }
+    if(eat) {
+        eat = false;
+        add_length = true;
+        food.position = random_number;
+        old_tail_position = one_player_snake[one_player_snake.length - 1].position;
+        
+        if(difficulty === "Easy") {
+            score += 6;
+            
+        } else if(difficulty === "Normal") {
+            score += 10;
+            
+        } else {
+            score += 14;
+            
+        }
+        
+    }
+    
+    /*
+    for(var i = 0; i < available_positions.length; i++) {
+        var x_position = ((available_positions[i] - 1) % 40) * 10 + 5;
+        var y_position = Math.ceil(available_positions[i] / 40 - 1) * 10 + 5;
+      
+        fill(110, 86, 14);
+      
+        ellipse (x_position, y_position , 10, 10);
+        
+    } */
+    
+    food.draw();
+    
+    if(one_player_crash) {
+        fill(255, 255, 255);
+        one_player_snake[0].draw_eyes = false;
+        game_over = true;
+        
+    }
+    
+};
+
+var end_game_screen = function() {
+    end_delay++;
+    
+    if(end_delay > delay_time) {
+        
+        fill(110, 110, 110, 190);
+        rect(0, 0, 400, 400);
+        
+        fill(194, 129, 33);
+        rect(75, 45, 250, 310, 20);
+        
+        textSize(30);
+        fill(0, 0, 0);
+        text("GAME OVER", 109, 84);
+        
+        textAlign(CENTER);
+        
+        textSize(25);
+        text("Final Score: " + score, 200, 124);
+        
+        if((high_scores[9] - score + 1) === 1) {
+            point_plural = "";
+            
+        } else {
+            point_plural = "s";
+            
+        }
+        
+        if(score <= high_scores[9]) {
+            text("You need at least " , 200, 192);
+            text((high_scores[9] - score + 1) + " more point" + point_plural, 200, 218);
+            text(" for a new highscore", 200, 244);
+            
+        } else {
+            initials_text = [];
+            initials_text += initials[0];
+            initials_text += initials[1];
+            initials_text += initials[2];
+            initials.splice(3, 1);
+            
+            if(key_pressed && initials.length <  4) {
+                add_initial();
+                
+            }
+            
+            textSize(20);
+            text("Enter your initials:", 200, 230);
+            
+            fill(255, 255, 255);
+            rect(155, 245, 90, 44);
+            fill(0, 0, 0);
+            textSize(35);
+            
+            text(initials_text, 200, 280);
+            
+        }
+        
+        if(perfect_game) {
+            
+            textSize(25);
+            text("Wow, a perfect", 200, 160);
+            text("game! Impressive!", 200, 190);
+            
+        } else if(score > high_scores[9]) {
+            
+            textSize(25);
+            text("Congratulations!", 200, 160);
+            text("New high score", 200, 190);
+            
+        }
+        
+        textAlign(LEFT);
+        
+        play_again_button.draw();
+        home_screen_button.draw();
+        
+        if(play_again) {
+            game_over = false;
+            play_again = false;
+            
+            add_high_score();
+            
+            reset_one_player_snake();
+            
+        }
+        if(go_home) {
+            one_player = false;
+            game_over = false;
+            home = true;
+            go_home = false;
+            
+            add_high_score();
+            
+            reset_one_player_snake();
+            
+            reset_home_snake();
+            
+            
+        }
+        
+    } else if(end_delay >= 0) {
+        
+        fill(110, 110, 110, (190 / delay_time)*end_delay);
+        rect(0, 0, 400, 400);
+        
+    }
+    
+    
+};
+
+var draw = function() {
+    
+    if(home) {
+        
+        home_screen();
+        
+    }
+    if(settings) {
+        
+        settings_screen();
+        
+    }
+    if(one_player) {
+        
+        one_player_screen();
+        
+    }
+    if(two_player) {
+        background(255, 0, 0);
+        
+    }
+    if(guide) {
+        background(217, 255, 0);
+        
+    }
+    if(game_over) {
+        
+        end_game_screen();
+        
+    }
+    mouse_released = false;
+    //game_grid(); // 40 by 38 spaces
+    //home_grid(); //40 by 40 spaces
+    
+};
