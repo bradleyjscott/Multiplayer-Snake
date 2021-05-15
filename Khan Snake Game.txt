@@ -38,6 +38,13 @@ Updates and Fixes:
 - Fixed one player head orientation during top and bottom wall collision when right side head is showing.
 - Fixed player one wall collision failure in two player mode.
 - Space no longer starts game when entering names in two player mode (can use names with spaces).
+
+2020 Jul 16
+- Fixed incorrect random food locations (sometimes not showing).
+
+2020 Jul 25
+- Fixed various end game (perfect game) issues. (Not fully tested)
+- Fixed "slipping" when paused, especially when tab is left.
 */
 noStroke();
 noCursor();
@@ -629,7 +636,7 @@ BodySegment.prototype.draw = function() {
 {
     //Highest = 15190
     var high_score_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
-    var high_scores = [1440, 1150, 1030, 990, 560, 450, 450, 430, 320, 220];
+    var high_scores = [1440, 1150, 1030, 990, 780, 560, 450, 450, 430, 320];
     var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
     var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
@@ -729,6 +736,7 @@ BodySegment.prototype.draw = function() {
  var add_length = false;
  var perfect_game = false;
  var add_code = true;
+ var stall_preventer = 0;
  
 }
 //Two player variables
@@ -2759,7 +2767,7 @@ var one_player_screen = function() {
     }
     
     //Check for a perfect game
-    if(one_player_snake.size === 1520) {
+    if(one_player_snake.length === 1520) {
         perfect_game = true;
         player1_snake_stopped = true;
         game_over = true;
@@ -2770,6 +2778,7 @@ var one_player_screen = function() {
     old_positions = available_positions;
     available_positions = [];
     for(var i = 0; i < old_positions.length; i++) {
+        stall_preventer++;
         
         if(old_positions[i] !== one_player_snake[0].position) {
             
@@ -2807,7 +2816,7 @@ var one_player_screen = function() {
     }
     
     //Update snake position
-    if(millis() >= update_timer + speed && !player1_snake_stopped && !one_player_crash) {
+    if(millis() >= update_timer + speed && !player1_snake_stopped && !one_player_crash && !paused) {
         number = 0;
         
         update_snake(one_player_snake, 3);
@@ -2869,7 +2878,7 @@ var one_player_screen = function() {
     
     //Eating
     if(one_player_snake[0].position === food.position) {
-        random_number = floor(random(81, available_positions.length + 0.9));
+        random_number = floor(random(0, available_positions.length - 0.1));
         eat = true;
         
     }
@@ -2939,7 +2948,6 @@ var one_player_screen = function() {
     
     //Do when paused
     if(paused) {
-        update_timer = millis();
         fill(115, 115, 115, 180);
         rect(100, 60, 200, 62, 15);
         
@@ -3035,7 +3043,7 @@ var two_player_screen = function() {
     }
     
     //Update snake position
-    if(millis() >= update_timer + speed) {
+    if(millis() >= update_timer + speed && !paused) {
         if(!player_one_key_pressed) {
             key_codes.push(68);
             
@@ -3319,7 +3327,6 @@ var two_player_screen = function() {
     
     //Do when paused
     if(paused && !before_start) {
-        update_timer = millis();
         fill(115, 115, 115, 180);
         rect(100, 60, 200, 62, 15);
         
@@ -3492,10 +3499,48 @@ var end_game_screen = function() {
             }
             
             if(score <= high_scores[9]) {
-                text("You need at least", 200, 192);
+                
+                if(!perfect_game) {
+                    
+                    text("You need at least", 200, 192);
                 text((high_scores[9] - score + 1) + " more point" + point_plural, 200, 218);
                 text("for a new highscore", 200, 244);
                 
+                } else {
+                    var R = 25;
+                    var x1 = 140;
+                    var y1 = 245;
+                    var x2 = 200;
+                    var y2 = 245;
+                    var x3 = 260;
+                    var y3 = 245;
+                    
+                    stroke(0, 0, 0);
+                    strokeWeight(2);
+                    //Left star
+                    line(x1 - R*0.9511, y1 - R*0.3090, x1 + R*0.9511, y1 - R*0.3091);
+                    line(x1 + R*0.9511, y1 - R*0.3091, x1 - R*0.5878, y1 + R*0.8090);
+                    line(x1 - R*0.5878, y1 + R*0.8090, x1, y1 - R);
+                    line(x1, y1 - R, x1 + R*0.5878, y1 + R*0.8090);
+                    line(x1 + R*0.5878, y1 + R*0.8090, x1 - R*0.9511, y1 - R*0.3090);
+                    
+                    //Middle star
+                    line(x2 - R*0.9511, y2 - R*0.3090, x2 + R*0.9511, y2 - R*0.3091);
+                    line(x2 + R*0.9511, y2 - R*0.3091, x2 - R*0.5878, y2 + R*0.8090);
+                    line(x2 - R*0.5878, y2 + R*0.8090, x2, y2 - R);
+                    line(x2, y2 - R, x2 + R*0.5878, y2 + R*0.8090);
+                    line(x2 + R*0.5878, y2 + R*0.8090, x2 - R*0.9511, y2 - R*0.3090);
+                    
+                    //Right star
+                    line(x3 - R*0.9511, y3 - R*0.3090, x3 + R*0.9511, y3 - R*0.3091);
+                    line(x3 + R*0.9511, y3 - R*0.3091, x3 - R*0.5878, y3 + R*0.8090);
+                    line(x3 - R*0.5878, y3 + R*0.8090, x3, y3 - R);
+                    line(x3, y3 - R, x3 + R*0.5878, y3 + R*0.8090);
+                    line(x3 + R*0.5878, y3 + R*0.8090, x3 - R*0.9511, y3 - R*0.3090);
+                    
+                    noStroke();
+                    
+                }
             } else {
                 var cursor_time = millis();
                 initials_text = [];
