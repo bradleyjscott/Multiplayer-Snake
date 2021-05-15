@@ -52,9 +52,13 @@ Updates and Fixes:
 
 2020 Jul 28
 - Fixed small boost control issues.
+
+2020 Jul 30
+- Completed multiple Guide screen updates including: Refactoring, Adding scroll bar background, and adding Common Questions and Comments section.
+- Added pre-game flag to one player screen.
+
+To view a version of this game prior to the listed updates visit the first spin-off below.
 */
-noStroke();
-noCursor();
 
 //Mouse and keys
 {
@@ -262,21 +266,8 @@ mouseReleased = function() {
 //Do when the mouse is scrolled
 var scroll_value = 0;
 mouseScrolled = function() {
-    
-    if((scroll_value < 0 || mouseScroll < 0) && (scroll_value >= -70 || mouseScroll > 0)) {
-        scroll_value += mouseScroll;
-        
-    }
-    
-    if(scroll_value <= -74) {
-        scroll_value = -72;
-        
-    }
-    if(scroll_value > 0) {
-        scroll_value = 0;
-        
-    }
-    
+    scroll_value += mouseScroll;
+
 };
 }
 
@@ -977,50 +968,49 @@ var update_timer2 = millis();
     var back_button_2 = new Button (6, 13, 40, 34, 186, 163, 108, 187, 164, 109, "Back", 0, 10, 20);
     var text_y_position = 115;
     var text_x_position = 40;
-    var guide_text = [
-        "The goal of the game of Snake is",
-        "to eat as many food items as",
-        "possible and grow as large as you",
-        "before dying. Every time you eat a",
-        "food item you gain one section on",
-        "your snake. When you run into a", 
-        "section of your own snake (or the",
-        "wall if that setting is enabled) you",
-        "die. Press space to pause.",
-        "",
-        "Single Player:",
-        "In the single player version, you",
-        "control the direction of your snake",
-        "with the W, A, S, and D keys or the",
-        "arrow keys. Every time you eat a",
-        "food item your score will increase",
-        "dependent on the difficulty you",
-        "have selected. For the three",
-        "difficulty settings of easy, normal,",
-        "and hard you will gain 6, 10, and",
-        "14 points respectively.",
-        "",
-        "Two Player:",
-        "In the two-player version, each",
-        "player controls one snake; player",
-        "one using the W, A, S, and D keys",
-        "and player two using the arrow",
-        "keys. The objective is to",
-        "out-survive your opponent. A",
-        "snake will die if it runs into itself,",
-        "the other player’s snake, or the",
-        "wall when that setting is selected.",
-        "In the event that both snakes die",
-        "at the same time, the winner is the",
-        "longer snake; if both snakes are",
-        "the same length there is a tie.",
-        "",
-        "Thanks for playing",
-        "Good luck!"
+    var fragment_width = 188;
+    var guide_text_fragments = [];
+    var guide_text = "Common Questions and Coments:^Q: How do I save my high score?^A: Please save a spinn-off displaying the home screen. I am also temporarily accepting screenshots.^^Q: What's the goal of the game?^A: To get as long as you can by eating without dying.^^Q: How do I die?^A: By running into yourself or, when the setting is selected, the wall.^^C: The game seems a bit slow.^A: You can hold any direction key to boost. Or increase the difficulty (speed) in settings.^^C: I can't pause the game.^A: Yes, you can! Use the space bar.^^Q: How do I control the snake?^A: Use either the arrow keys or the WASD keys (both in two player).^^Q: How many points do I get when eating? ^A: It depends on the difficulty setting: 14 on hard, 10 on normal, and 6 on easy.^^Instructions:^The goal of the game of Snake is to eat as many food items as possible and grow as large as you can before dying. Every time you eat a food item you gain one section on your snake. When you run into a section of your own snake (or the wall if that setting is enabled) you die.^^Single Player:^In the single player version, you can control the direction of your snake with the W, A, S, and D keys or the arrow keys. If you hold down a direction key, you will boost in that direction. Every time you eat a food item your score will increase dependent on the difficulty you have selected. For the three difficulty settings of easy, normal, and hard you will gain 6, 10, and 14 points respectively.^^Two Player:^In the two-player version, each player controls one snake; player one using the W, A, S, and D keys and player two using the arrow keys. Boosts work here too! The objective is to out-survive your opponent. A snake will die if it runs into itself, the other player’s snake, or the wall when that setting is selected. In the event that both snakes die at the same time, the winner is the longer snake; if both snakes are the same length there is a tie.^^Thanks for playing^Good luck!";
+    var current_fragment = "";
+    var current_word = "";
+    //Generate fragments
+    for(var i = 0; i < guide_text.length; i++) {
+        
+        if(guide_text[i] === "^") {
+            current_fragment += current_word;
+            guide_text_fragments.push(current_fragment);
+            current_fragment = "";
+            current_word = "";
+            
+        } else if(guide_text[i] === " " || guide_text[i] === ".") {
+            current_word += guide_text[i];
+            
+            if((textWidth(current_fragment) + textWidth(current_word)) > fragment_width) {
+                guide_text_fragments.push(current_fragment);
+                current_fragment = "";
+                
+            }
+            
+        } else if(current_word[current_word.length - 1] === " ") {
+            current_fragment += current_word;
+            current_word = guide_text[i];
+            
+        } else {
+            current_word += guide_text[i];
+            
+        }
+        
+        if(i === guide_text.length - 1) {
+            current_fragment += current_word;
+            guide_text_fragments.push(current_fragment);
+            current_fragment = "";
+            current_word = "";
+        }
+    }
 
-        ];
-        var scroll_button = new Button (350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136, 170, 170, 170, 150, 150, 150, "Scroll", 0, 6, 24);
-        var old_Y_position = 0;
+        var scroll_button = new Button (350, 82, 18, sq(277)/((20 * guide_text_fragments.length) + 68), 170, 170, 170, 150, 150, 150, "Scroll", 0, 6, 24);
+        var bottom_scroll_value = 100;
+        var old_y_position = 0;
 }
 
 //Other functions
@@ -1400,6 +1390,7 @@ var reset_one_player_snake = function() {
     initials = ["  ", "  ", "  "];
     place = 0;
     paused = false;
+    before_start = true;
     
     if(score !== 0) {
         cheating3 = true;
@@ -2986,7 +2977,7 @@ var one_player_screen = function() {
             
         }
     }
-    
+        
     //Check for a perfect game
     if(one_player_snake.length === 1520) {
         perfect_game = true;
@@ -3167,8 +3158,28 @@ var one_player_screen = function() {
         
     }
     
+    //Pre-game tag
+    if(before_start) {
+        paused = true;
+        
+        textAlign(CENTER);
+        fill(115, 115, 115, 180);
+        rect(10, 60, 380, 62, 15);
+        
+        fill(0, 0, 0);
+        textSize(30);
+        text("Press direction key to start", 200, 100);
+        textAlign(LEFT);
+        
+        if(pressed_key === 87 || pressed_key === 83 || pressed_key === 68 || pressed_key === 38 || pressed_key === 39 || pressed_key === 40) {
+            before_start = false;
+            paused = false;
+            
+        }
+    }
+    
     //Do when paused
-    if(paused) {
+    if(paused && !before_start) {
         fill(115, 115, 115, 180);
         rect(100, 60, 200, 62, 15);
         
@@ -3976,9 +3987,9 @@ var guide_screen = function() {
     textSize(20);
     
     //Display all of the text on the guide screen
-    for(var i = 0; i < guide_text.length; i++) {
+    for(var i = 0; i < guide_text_fragments.length; i++) {
         
-        if(guide_text[i] === "Single Player:" || guide_text[i] === "Two Player:" || guide_text[i] === "Thanks for playing" || guide_text[i] === "Good luck!") {
+        if(guide_text_fragments[i] === "Single Player:" || guide_text_fragments[i] === "Two Player:" || guide_text_fragments[i] === "Thanks for playing" || guide_text_fragments[i] === "Good luck!" || guide_text_fragments[i] === "Instructions:") {
             text_x_position = 200;
             textAlign(CENTER);
             
@@ -3987,7 +3998,7 @@ var guide_screen = function() {
             textAlign(LEFT);
             
         }
-        text(guide_text[i], text_x_position, 50 + text_y_position + i * 20);
+        text(guide_text_fragments[i], text_x_position, 50 + text_y_position + i * 20);
         
     }
     
@@ -4029,6 +4040,9 @@ var guide_screen = function() {
     line(30, 361, 369, 361);
     noStroke();
     
+    fill(217, 217, 217, 180);
+    rect(350, 82, 18, 277);
+    
     scroll_button.draw();
     
     if(back_home) {
@@ -4039,66 +4053,53 @@ var guide_screen = function() {
     //Scroll with up and down keys
     if(key_pressed) {
         key_pressed = false;
-        if(pressed_key === 38 && scroll_value < 0) {
+        if(pressed_key === 38) {
             scroll_value += 2;
             
         }
-        if(pressed_key === 40 && scroll_value > -72) {
+        if(pressed_key === 40) {
             scroll_value -= 2;
             
         }
     }
     
-    //Correct scroll_value if it's past it's boundaries
-    if(scroll_value > 0) {
-        scroll_value = 0;
-        
-    }
-    if(scroll_value < -72) {
-        scroll_value = -72;
-        
-    }
-    
     //Figure out text position when scroll bar is pressed
     if(scroll_button_pressed) {
-        if(scroll_button.YPosition >= 82 && scroll_button.YPosition <= 223) {
-            scroll_button.YPosition = old_Y_position - (click_y_position - mouseY);
-            text_y_position = (11229 / 14) - ((285 / 70) * scroll_button.YPosition) - 353;
-            scroll_value = (text_y_position - 115) / 8;
-            
-        }
-        if(scroll_button.YPosition < 82) {
-            scroll_button.YPosition = 82;
-            text_y_position = 115;
-            
-        }
-        if(scroll_button.YPosition >= 223) {
-            scroll_button.YPosition = 223;
-            text_y_position = -461;
-            
-        }
         
+            scroll_button.YPosition = old_y_position - (click_y_position - mouseY);
+            text_y_position = (((68 + (20 * guide_text_fragments.length)) * (82 - scroll_button.YPosition))/277) + 115;
+
+            scroll_value = (text_y_position - 115) / 16;
+            
     } else {
-        old_Y_position = scroll_button.YPosition;
-        text_y_position = 115 + scroll_value * 8;
-        scroll_button.YPosition = 82 - ((70 / 285) * (text_y_position - 115));
+        old_y_position = scroll_button.YPosition;
+        
+        text_y_position = 115 + scroll_value * 16;
         
     }
     
-    //Force stop and ends of text
+    //Force stop at ends of text
     if(text_y_position > 115) {
-        scroll_button.YPosition = 82;
+        scroll_value = 0;
         text_y_position = 115;
         
-    }
-    if(text_y_position < -461) {
-        scroll_button.YPosition = 223;
-        text_y_position = -461;
+    } else if(text_y_position < -((68 + (20 * guide_text_fragments.length)) - 277 - 115)) {
+        text_y_position = -((68 + (20 * guide_text_fragments.length)) - 277 - 115);
+        
+        if(bottom_scroll_value === 100) {
+            bottom_scroll_value = scroll_value;
+            
+        }
+        scroll_value = bottom_scroll_value;
         
     }
+    
+    scroll_button.YPosition = 82 - ((277 * (text_y_position - 115)) / ((20 * guide_text_fragments.length) + 68));
 };
 
 var draw = function() {
+    noStroke();
+    noCursor();
     
     //Which screen to deisplay
     if(home) {
@@ -4136,6 +4137,6 @@ var draw = function() {
         enter_names_screen();
         
     }
-    mouse_released = false;
     
+    mouse_released = false;
 };
