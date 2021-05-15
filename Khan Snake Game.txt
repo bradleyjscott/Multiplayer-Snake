@@ -40,11 +40,15 @@ Updates and Fixes:
 - Space no longer starts game when entering names in two player mode (can use names with spaces).
 
 2020 Jul 16
-- Fixed incorrect random food locations (sometimes not showing).
+- Fixed incorrect random food locations in one player mode (sometimes not showing).
 
 2020 Jul 25
 - Fixed various end game (perfect game) issues. (Not fully tested)
 - Fixed "slipping" when paused, especially when tab is left.
+
+2020 Jul 27
+- Added boost to one and two player modes.
+- Fixed incorrect random food locations in two player mode (sometimes not showing).
 */
 noStroke();
 noCursor();
@@ -57,11 +61,34 @@ var paused = false;
 var shift_held = false;
 var player_one_key_pressed = false;
 var player_two_key_pressed = false;
+var held = false;
+var held2 = false;
+var arrow_keys = false;
+var WASD_keys = false;
 
 //Do when any key is pressed
 keyPressed = function() {
+    held = false;
     key_pressed = true;
     pressed_key = keyCode;
+    
+    if(arrow_keys) {
+        held = true;
+        
+    }
+    if(WASD_keys) {
+        held2 = true;
+        
+    }
+    
+    if(keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40) {
+        arrow_keys = true;
+        
+    }
+    if(keyCode === 65 || keyCode === 87 || keyCode === 68 || keyCode === 83) {
+        WASD_keys = true;
+        
+    }
     
     if(keyCode === 16) {
         shift_held = true;
@@ -91,6 +118,17 @@ keyPressed = function() {
 //Do when any key is released
 keyReleased = function() {
     key_pressed = false;
+    
+    if(keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40) {
+        held = false;
+        arrow_keys = false;
+        
+    }
+    if(keyCode === 65 || keyCode === 87 || keyCode === 68 || keyCode === 83) {
+        held2 = false;
+        WASD_keys = false;
+        
+    }
     
     if(keyCode === 16) {
         shift_held = false;
@@ -788,6 +826,8 @@ var head_on_top = 0;
 var player_one_win = false;
 var player_two_win = false;
 var tie = false;
+var player_two_speed = speed;
+var update_timer2 = millis();
     
 }
 //Enter names variables
@@ -892,7 +932,14 @@ var game_grid = function() {
 //Update all the snakes
 var update_snake = function(snake, top_row) {
     var old_head = snake[0].position;
-    update_timer = millis();
+    
+    if(snake === two_player_snake2) {
+        update_timer2 = millis();
+        
+    } else {
+        update_timer = millis();
+        
+    }
     
     //Appropreatley use given key code
     if(snake !== two_player_snake2) {
@@ -1889,7 +1936,37 @@ var home_screen = function() {
     Settings_button.draw();
     Instructions_button.draw();
     
-    
+    //Boost control
+    if(difficulty === "Easy") {
+        
+        if(held || held2) {
+            speed = 125;
+            
+        } else {
+            speed = 250;
+            
+        }
+        
+    } else if(difficulty === "Normal") {
+        
+        if(held || held2) {
+            speed = 88;
+            
+        } else {
+            speed = 175;
+            
+        }
+    } else {
+        
+        if(held || held2) {
+            speed = 50;
+            
+        } else {
+            speed = 100;
+            
+        }
+    }
+
     //Add code to queue when it's not already there
     var add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
@@ -2107,7 +2184,6 @@ var settings_screen = function() {
     
     //Difficulty indicator
     if(difficulty === "Easy") {
-        speed = 250;
         
         if(difficulty_indicator_x >= 38) {
             
@@ -2128,7 +2204,6 @@ var settings_screen = function() {
         }
         
     } else if(difficulty === "Normal") {
-        speed = 175;
         
         //Need small gap in the middle for indicator to stop changing value
         if(difficulty_indicator_x < 99) {
@@ -2163,7 +2238,6 @@ var settings_screen = function() {
         }
         
     } else if(difficulty === "Hard") {
-        speed = 100;
         
         if(difficulty_indicator_x <= 160) {
             
@@ -2766,6 +2840,37 @@ var one_player_screen = function() {
         
     }
     
+    //Boost control
+    if(difficulty === "Easy") {
+        
+        if(held || held2) {
+            speed = 125;
+            
+        } else {
+            speed = 250;
+            
+        }
+        
+    } else if(difficulty === "Normal") {
+        
+        if(held || held2) {
+            speed = 88;
+            
+        } else {
+            speed = 175;
+            
+        }
+    } else {
+        
+        if(held || held2) {
+            speed = 50;
+            
+        } else {
+            speed = 100;
+            
+        }
+    }
+    
     //Check for a perfect game
     if(one_player_snake.length === 1520) {
         perfect_game = true;
@@ -2984,7 +3089,7 @@ var two_player_screen = function() {
     } else {
         
         if(before_start) {
-            update_timer = millis();
+            paused = true;
             
             fill(115, 115, 115, 180);
             rect(50, 60, 300, 62, 15);
@@ -2998,6 +3103,61 @@ var two_player_screen = function() {
                 paused = false;
                 
             }
+        }
+    }
+    
+    //Boost control
+    if(difficulty === "Easy") {
+        
+        if(held2) {
+            speed = 125;
+            
+        } else {
+            speed = 250;
+            
+        }
+        
+        if(held) {
+            player_two_speed = 125;
+            
+        } else {
+            player_two_speed = 250;
+            
+        }
+        
+    } else if(difficulty === "Normal") {
+        
+        if(held2) {
+            speed = 88;
+            
+        } else {
+            speed = 175;
+            
+        }
+        
+        if(held) {
+            player_two_speed = 88;
+            
+        } else {
+            player_two_speed = 175;
+            
+        }
+    } else {
+        
+        if(held2) {
+            speed = 50;
+            
+        } else {
+            speed = 100;
+            
+        }
+        
+        if(held) {
+            player_two_speed = 50;
+            
+        } else {
+            player_two_speed = 100;
+            
         }
     }
     
@@ -3042,26 +3202,17 @@ var two_player_screen = function() {
         
     }
     
-    //Update snake position
+    //Update snake one position
     if(millis() >= update_timer + speed && !paused) {
         if(!player_one_key_pressed) {
             key_codes.push(68);
             
         }
-        if(!player_two_key_pressed) {
-            snake_two_key_codes.push(37);
-            
-        }
     
         snake_one_old_tail_position = two_player_snake1[two_player_snake1.length - 1].position;
-        snake_two_old_tail_position = two_player_snake2[two_player_snake2.length - 1].position;
         
         if(!snake_one_crash  && !both_crash) {
             update_snake(two_player_snake1, 3);
-            
-        }
-        if(!snake_two_crash  && !both_crash){
-            update_snake(two_player_snake2, 3);
             
         }
         
@@ -3074,6 +3225,22 @@ var two_player_screen = function() {
             two_player_available_positions.push(snake_one_old_tail_position);
             
         }
+    }
+    
+    //Update snake two position
+    if(millis() >= update_timer2 + player_two_speed && !paused) {
+        if(!player_two_key_pressed) {
+            snake_two_key_codes.push(37);
+            
+        }
+    
+        snake_two_old_tail_position = two_player_snake2[two_player_snake2.length - 1].position;
+        
+        if(!snake_two_crash  && !both_crash){
+            update_snake(two_player_snake2, 3);
+            
+        }
+        
         if(snake_two_add_length) {
             snake_two_add_length = false;
             two_player_snake2.push(new BodySegment(snake_two_old_tail_position, player2_colour));
@@ -3083,7 +3250,6 @@ var two_player_screen = function() {
             two_player_available_positions.push(snake_two_old_tail_position);
             
         }
-        
     }
     
     //Crash when both heads collide
@@ -3296,12 +3462,12 @@ var two_player_screen = function() {
     
     //Eating
     if(two_player_snake1[0].position === two_player_food.position) {
-        two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
+        two_player_random_number = floor(random(0, two_player_available_positions.length - 0.1));
         snake_one_eat = true;
         
     }
     if(two_player_snake2[0].position === two_player_food.position) {
-        two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
+        two_player_random_number = floor(random(0, two_player_available_positions.length - 0.1));
         snake_two_eat = true;
         
     }
