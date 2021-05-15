@@ -9,6 +9,8 @@ var paused = false;
 var shift_held = false;
 var player_one_key_pressed = false;
 var player_two_key_pressed = false;
+
+var scroll_button_pressed = false;
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
@@ -50,7 +52,31 @@ keyReleased = function() {
 
 var mouse_released = false;
 mouseReleased = function() {
-    mouse_released = true;
+    
+    if(mouseButton === LEFT) {
+        scroll_button_pressed = false;
+        mouse_released = true;
+        
+    }
+    
+};
+
+var scroll_value = 0;
+mouseScrolled = function() {
+    
+    if((scroll_value < 0 || mouseScroll < 0) && (scroll_value >= -70 || mouseScroll > 0)) {
+        scroll_value += mouseScroll;
+        
+    }
+    
+    if(scroll_value <= -74) {
+        scroll_value = -72;
+        
+    }
+    if(scroll_value > 0) {
+        scroll_value = 0;
+        
+    }
     
 };
 }
@@ -81,10 +107,10 @@ var one_player_pressed = false; //false
 var two_player_pressed = false;
 var two_player = false; //false
 var settings = false; //false
-var guide = false; //false
+var guide = true; //false
 
 //Settings
-var back = false; //false
+var back = false; //And Guide
 var over_back = false;
 var difficulty = "Normal";
 var wall_collisions = false; //false
@@ -102,6 +128,8 @@ var initials_pressed = false;
 
 //Enter names
 var continue_pressed = false;
+
+
 var enter_player_one_name = false;
 var enter_player_two_name = false;
 
@@ -113,8 +141,8 @@ Button.prototype.draw = function () {
         fill(this.R2, this.G2, this.B2);
         rect(this.XPosition, this.YPosition, this.Width, this.Height);
         
-        if (mouseIsPressed) {
-            if(this.Text !== "Back" && this.Text !== "Initials" && this.Text !== "Player one name" && this.Text !== "Player two name") {
+        if (mouseIsPressed && mouseButton === LEFT) {
+            if(this.Text !== "Back" && this.Text !== "Initials" && this.Text !== "Player one name" && this.Text !== "Player two name" && this.Text !== "Scroll") {
                 
                 fill(this.R2 - 32, this.G2 - 32, this.B2 - 32);
                 
@@ -122,6 +150,11 @@ Button.prototype.draw = function () {
             rect(this.XPosition, this.YPosition, this.Width, this.Height);
             fill(this.R2, this.G2, this.B2);
             rect(this.XPosition + 1.5, this.YPosition + 1.5, this.Width - 4, this.Height - 4);
+            
+            if(this.Text === "Scroll" && !mouse_released) {
+                scroll_button_pressed = true;
+                
+            }
         }
         
         var button_text = this.Text;
@@ -148,6 +181,7 @@ Button.prototype.draw = function () {
             } else if(button_text === "Back") {
                 home = true;
                 settings = false;
+                guide = false;
                 
             } else if(button_text === "Easy") {
                 difficulty = "Easy";
@@ -229,6 +263,9 @@ Button.prototype.draw = function () {
                 
             } else if(button_text === "Player two name") {
                 enter_player_two_name = true;
+                
+            } else if(this.Text === "Scroll") {
+                scroll_button_pressed = false;
                 
             }
         }
@@ -701,6 +738,55 @@ var tie = false;
     var Is = 0;
     var enter_pressed = false;
     
+}
+//Guide screen variables
+{
+    var back_button_2 = new Button (6, 13, 40, 34, 186, 163, 108, 187, 164, 109, "Back", 0, 10, 20);
+    var text_y_position = 115;
+    var text_x_position = 40;
+    var guide_text = [
+        "The goal of the game of Snake is",
+        "to eat as many food items as",
+        "possible and grow as large as you",
+        "before dying. Every time you eat a",
+        "food item you gain one section on",
+        "your snake. When you run into a", 
+        "section of your own snake (or the",
+        "wall if that setting is enabled) you",
+        "die.",
+        "",
+        "Single Player:",
+        "In the single player version, you",
+        "control the direction of your snake",
+        "with the W, A, S, and D keys or the",
+        "arrow keys. Every time you eat a",
+        "food item your score will increase",
+        "dependent on the difficulty you",
+        "have selected. For the three",
+        "difficulty settings of easy, normal,",
+        "and hard you will gain 6, 10, and",
+        "14 points respectively.",
+        "",
+        "Two Player:",
+        "In the two-player version, each",
+        "player controls one snake; player",
+        "one using the W, A, S, and D keys",
+        "and player two using the arrow",
+        "keys. The objective is to",
+        "out-survive your opponent. A",
+        "snake will die if it runs into itself,",
+        "the other player’s snake, or the",
+        "wall when that setting is selected.",
+        "In the event that both snakes die",
+        "at the same time, the winner is the",
+        "longer snake; if both snakes are",
+        "the same length there is a tie.",
+        "",
+        "Thanks for playing",
+        "Good luck!"
+
+        ];
+        var scroll_button = new Button (350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136, 170, 170, 170, 150, 150, 150, "Scroll", 0, 6, 24);
 }
 
 //Other functions
@@ -1671,9 +1757,11 @@ var home_screen = function() {
     
     background (32, 138, 35);
     textSize(68);
+    textAlign(CENTER);
     fill(0, 0, 0);
-    text("Snake", 105, 60);
+    text("Snake", 200, 60);
     textSize(12);
+    textAlign(LEFT);
     
     fill(69, 79, 84);
     rect(120, 100, 160, 210, 8);
@@ -3334,8 +3422,6 @@ var end_game_screen = function() {
             
             add_high_score();
             
-            //reset_one_player_snake();
-            
             reset_home_snake();
             
             
@@ -3348,6 +3434,100 @@ var end_game_screen = function() {
         
     }
     
+    
+};
+
+var guide_screen = function() {
+    background(186, 163, 108);
+    
+    text_y_position = 115 + scroll_value * 8;
+    
+    textAlign(CENTER);
+    textSize(30);
+    text("How To Play:", 200, text_y_position);
+    textSize(15);
+    text("(Hold shift to scroll)", 200, text_y_position + 17);
+    textAlign(LEFT);
+    textSize(20);
+    for(var i = 0; i < guide_text.length; i++) {
+        
+        if(guide_text[i] === "Single Player:" || guide_text[i] === "Two Player:" || guide_text[i] === "Thanks for playing" || guide_text[i] === "Good luck!") {
+            text_x_position = 200;
+            textAlign(CENTER);
+            
+        } else {
+            text_x_position = 40;
+            textAlign(LEFT);
+            
+        }
+        text(guide_text[i], text_x_position, 50 + text_y_position + i * 20);
+        
+    }
+    
+    fill(186, 163, 108);
+    rect(0, 0, 400, 80);
+    rect(0, 360, 400, 40);
+    
+    textSize(55);
+    textAlign(CENTER);
+    fill(0, 0, 0);
+    text("Guide", 200, 50);
+    
+    textSize(12);
+    text("A game by Bradley Scott II | 2020", 200, 390);
+    
+    back_button_2.draw();
+    
+    //Back arrow
+    strokeWeight(4);
+    if(over_back) {
+        
+        stroke(70, 70, 70);
+        
+    } else {
+        
+        stroke(0, 0, 0);
+        
+    }
+    line(20, 18, 10, 30);
+    line(20, 42, 10, 30);
+    line(40, 30, 11, 30);
+    
+    stroke(0, 0, 0);
+    //Borders
+    line(30, 80, 30, 360);
+    line(370, 80, 370, 360);
+    line(30, 80, 369, 80);
+    line(30, 361, 369, 361);
+    noStroke();
+    
+    fill(210, 210, 210);
+    rect(350, 82, 18, 277);
+    fill(170, 170, 170);
+    //rect(350, 82 - ((70 / 285) * (text_y_position - 115)), 18, 136);
+    
+    if(scroll_button_pressed) {
+        scroll_button.R2 = 120;
+        scroll_button.G2 = 120;
+        scroll_button.B2 = 120;
+        
+    } else {
+        scroll_button.R1 = 170;
+        scroll_button.G1 = 170;
+        scroll_button.B1 = 170;
+        scroll_button.R2 = 150;
+        scroll_button.G2 = 150;
+        scroll_button.B2 = 150;
+        scroll_button.YPosition = 82 - ((70 / 285) * (text_y_position - 115));
+        
+    }
+    
+    scroll_button.draw();
+    
+    //Delete
+    fill(255, 0, 0);
+    textSize(20);
+    text(scroll_value, 345, 40);
     
 };
 
@@ -3374,7 +3554,8 @@ var draw = function() {
         
     }
     if(guide) {
-        background(217, 255, 0);
+        
+        guide_screen();
         
     }
     if(game_over) {
