@@ -16,10 +16,14 @@ Happy slithering!
 */
 
 /*
-Update Notes:
+Updates and Fixes:
 
 2020 May 30
-Fixed tie in two player when both players crash and one is longer than the other.
+- Fixed tie in two player when both players crash and one is longer than the other.
+
+2020 Jun 25
+- Black status bar no longer fades when game ends.
+- Added up and down arrow scroll support on Guide screen.
 */
 noStroke();
 noCursor();
@@ -159,6 +163,7 @@ var enter_player_two_name = false;
 //Guide screen button variablres
 var scroll_button_pressed = false;
 var click_y_position = 0;
+var back_home = false;
 
 //How to draw the buttons
 Button.prototype.draw = function () {
@@ -229,6 +234,7 @@ Button.prototype.draw = function () {
                 home = true;
                 settings = false;
                 guide = false;
+                back_home = true;
                 
             } else if(button_text === "Easy") {
                 difficulty = "Easy";
@@ -608,8 +614,8 @@ BodySegment.prototype.draw = function() {
 //Home screen variables
 {
     //Highest = 15190
-    var high_score_initials = ["ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "BJS"];
-    var high_scores = [1150, 1030, 560, 450, 450, 430, 320, 220, 130, 0];
+    var high_score_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
+    var high_scores = [1440, 1150, 1030, 990, 560, 450, 450, 430, 320, 220];
     var One_player_button = new Button (33, 324, 150, 60, 98, 107, 112, 110, 119, 124, "1 Player", 30, 20, 39);
     var Two_player_button = new Button (217, 324, 150, 60, 98, 107, 112, 110, 119, 124, "2 Player", 30, 20, 39);
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
@@ -792,7 +798,7 @@ var tie = false;
     var Is = 0;
     var enter_pressed = false;
     var cheating2 = false; // Hidden here
-    var check_cheating_initials = ["ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "BJS"];
+    var check_cheating_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
     
 }
 //Guide screen variables
@@ -1219,9 +1225,8 @@ var reset_one_player_snake = function() {
     
 };
 
-//Reset teh home snake variables
+//Reset the home snake variables
 var reset_home_snake = function() {
-    
     key_codes = [39];
     home_snake_segments = [];
     home_snake_segments.push(new Head(314, player1_colour, true,  "Right"));
@@ -1237,6 +1242,8 @@ var reset_home_snake = function() {
     left = false;
     easter_eat = false;
     home_crash = false;
+    back_home = false;
+    pressed_key = 39;
 };
 
 //Add initials to the string when entering on the end screen
@@ -1966,15 +1973,15 @@ var home_screen = function() {
     }
     
     //Check for cheating
-    if(high_score_initials[0] !== "ZOW") {
+    if(high_score_initials[0] !== "MEK") {
         cheating = true;
         
     }
-    if(high_score_initials[1] !== "JOE") {
+    if(high_score_initials[1] !== "ZOW") {
         cheating = true;
         
     }
-    if(high_score_initials[2] !== "AMK") {
+    if(high_score_initials[2] !== "JOE") {
         cheating = true;
         
     }
@@ -2002,7 +2009,7 @@ var home_screen = function() {
         cheating = true;
         
     }
-    if(high_score_initials[9] !== "BJS") {
+    if(high_score_initials[9] !== "AMK") {
         cheating = true;
         
     }
@@ -3454,7 +3461,7 @@ var end_game_screen = function() {
         
         //End game screen base visuals
         fill(110, 110, 110, 190);
-        rect(0, 0, 400, 400);
+        rect(0, 20, 400, 380);
         fill(194, 129, 33);
         rect(75, 45, 250, 310, 20);
         
@@ -3616,7 +3623,7 @@ var end_game_screen = function() {
     } else if(end_delay >= 0) {
         
         fill(110, 110, 110, (190 / delay_time)*end_delay);
-        rect(0, 0, 400, 400);
+        rect(0, 20, 400, 380);
         
     }
     
@@ -3690,6 +3697,34 @@ var guide_screen = function() {
     noStroke();
     
     scroll_button.draw();
+    
+    if(back_home) {
+        reset_home_snake();
+        
+    }
+    
+    //Scroll with up and down keys
+    if(key_pressed) {
+        key_pressed = false;
+        if(pressed_key === 38 && scroll_value < 0) {
+            scroll_value += 2;
+            
+        }
+        if(pressed_key === 40 && scroll_value > -72) {
+            scroll_value -= 2;
+            
+        }
+    }
+    
+    //Correct scroll_value if it's past it's boundaries
+    if(scroll_value > 0) {
+        scroll_value = 0;
+        
+    }
+    if(scroll_value < -72) {
+        scroll_value = -72;
+        
+    }
     
     //Figure out text position when scroll bar is pressed
     if(scroll_button_pressed) {
