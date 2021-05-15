@@ -24,6 +24,11 @@ Updates and Fixes:
 2020 Jun 25
 - Black status bar no longer fades when game ends.
 - Added up and down arrow scroll support on Guide screen.
+
+2020 Jul 08
+- Fixed location of cursor on initials and player names enter fields.
+- Player two name entry field is now automatically selected when enter is pressed on player one entry field.
+- Improved display of winning player's name on two player 'game over' screen.
 */
 noStroke();
 noCursor();
@@ -771,17 +776,13 @@ var tie = false;
 //Enter names variables
 {
     var continue_button = new Button (152, 280, 96, 34, 78, 87, 92, 90, 99, 104, "Continue", 21, 6, 24);
-    var player_one_name_button = new Button (92, 161, 224, 34, 255, 255, 255, 255, 255, 255, "Player one name", 0, 47, 29);
-    var player_two_name_button = new Button (92, 234, 224, 34, 255, 255, 255, 255, 255, 255, "Player two name", 0, 47, 29);
+    var player_one_name_button = new Button (88, 161, 224, 34, 255, 255, 255, 255, 255, 255, "Player one name", 0, 47, 29);
+    var player_two_name_button = new Button (88, 234, 224, 34, 255, 255, 255, 255, 255, 255, "Player two name", 0, 47, 29);
     var player_one_name_text = "";
     var player_two_name_text = "";
     var old_name = "";
-    var player_one_Is = 0;
-    var player_two_Is = 0;
-    var player_one_capitals = 0;
-    var player_two_capitals = 0;
     var backspace = false;
-    
+    var display_cursor = false;
 }
 //End game variables
 {
@@ -794,12 +795,13 @@ var tie = false;
     var initials_text = "";
     var initials = ["  ", "  ", "  "];
     var place = 0;
-    var initials_button = new Button (155, 245, 90, 44, 255, 255, 255, 255, 255, 255, "Initials", 0, 47, 29);
-    var Is = 0;
+    var initials_button = new Button (145, 245, 110, 44, 255, 255, 255, 255, 255, 255, "Initials", 0, 47, 29);
     var enter_pressed = false;
     var cheating2 = false; // Hidden here
     var check_cheating_initials = ["MEK", "ZOW", "JOE", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK", "AMK"];
-    
+    var name_text_size = 0;
+    var blanks = 0;
+    var initial_letters;
 }
 //Guide screen variables
 {
@@ -1741,10 +1743,6 @@ var add_name_letter = function(name) {
     if(pressed_key === 8) {
         backspace = true;
         
-        
-    }
-    if(pressed_key === 10) {
-        enter_pressed = true;
         
     }
     
@@ -3334,26 +3332,39 @@ var enter_names_screen = function() {
         
     }
     
-    //Draw enter names buttons
+    //Draw enter names and continue buttons
     player_one_name_button.draw();
     player_two_name_button.draw();
     continue_button.draw();
     
+    //When enter pressed
+    if(key_pressed && pressed_key === 10) {
+        
+        if(enter_player_one_name) {
+            enter_player_one_name = false;
+            enter_player_two_name = true;
+            
+        } else {
+            enter_player_two_name = false;
+            
+        }
+    }
+    
     //Add letters to names when keys pressed
     if(key_pressed) {
         
-        if(enter_player_one_name && (player_one_name_text.length < 15 || pressed_key === 8)) {
+        if(enter_player_one_name && (textWidth(player_one_name_text) < 210 || pressed_key === 8)) {
             add_name_letter(player_one_name_text);
             
         }
-        if(enter_player_two_name && (player_two_name_text.length < 15 || pressed_key === 8)) {
+        if(enter_player_two_name && (textWidth(player_two_name_text) < 210 || pressed_key === 8)) {
             
             add_name_letter(player_two_name_text);
             
         }
         
     }
-    
+
     //How to backspace
     if(backspace) {
         backspace = false;
@@ -3379,45 +3390,13 @@ var enter_names_screen = function() {
         }
     }
     
-    //Figure out where cursor should be
-    player_one_Is = 0;
-    player_one_capitals = 0;
-    for(var i = 0; i < player_one_name_text.length; i++) {
-        
-        if(player_one_name_text[i] === player_one_name_text[i].toUpperCase()) {
-            player_one_capitals++;
-            
-        }
-        
-        if(player_one_name_text[i] === "I") {
-            player_one_Is++;
-            
-        }
-        
-    }
-    player_two_Is = 0;
-    player_two_capitals = 0;
-    for(var i = 0; i < player_two_name_text.length; i++) {
-        
-        if(player_two_name_text[i] === player_two_name_text[i].toUpperCase()) {
-            player_two_capitals++;
-            
-        }
-        
-        if(player_two_name_text[i] === "I") {
-            player_two_Is++;
-            
-        }
-        
-    }
-    
     //Flash cursors
-    if(enter_player_one_name && !enter_pressed && (cursor_time % 1000) < 500) {
-        text("|", 200 + (player_one_capitals * 7.5) + ((player_one_name_text.length - player_one_capitals) * 4.5) - (5 * player_one_Is), 184);
+    if(enter_player_one_name && (cursor_time % 1000) < 500) {
+        text("|", 200 + (textWidth(player_one_name_text) / 2), 184);
         
     }
-    if(enter_player_two_name && !enter_pressed && (cursor_time % 1000) < 500) {
-        text("|", 200 + (player_two_capitals * 7.5) + ((player_two_name_text.length - player_two_capitals) * 4.5) - (5 * player_two_Is), 257);
+    if(enter_player_two_name && (cursor_time % 1000) < 500) {
+        text("|", 200 + (textWidth(player_two_name_text) / 2), 257);
         
     }
     
@@ -3517,18 +3496,21 @@ var end_game_screen = function() {
                 textSize(35);
                 text(initials_text, 200, 280);
                 
-                Is = 0;
+                blanks = 0;
+                initial_letters = [];
                 for(var i = 0; i < initials.length; i++) {
                     
-                    if(initials[i] === "I") {
-                        Is++;
+                    if(initials[i] === "  ") {
+                        blanks++;
+                        
+                    } else {
+                        initial_letters += initials[i];
                         
                     }
-                    
                 }
                 
                 if(initials_pressed && !enter_pressed && (cursor_time % 1000) < 500) {
-                    text("|", 177 + (place * 21) - (8 * Is), 276);
+                    text("|", 202 + (textWidth(initial_letters) / 2) - (blanks * (58/6)), 276);
                     
                 }
                 
@@ -3560,12 +3542,11 @@ var end_game_screen = function() {
                 text("WINS!", 200, 250);
                 
                 if(player_one_win) {
+                    name_text_size = 50.0;
                     
-                    if(player_one_name.length < 6) {
-                        textSize(50);
-                        
-                    } else {
-                        textSize(50 - 2.5*player_one_name.length);
+                    while(textWidth(player_one_name) >= 200) {
+                        name_text_size -= 0.5;
+                        textSize(name_text_size);
                         
                     }
                     
@@ -3573,12 +3554,11 @@ var end_game_screen = function() {
                     
                     
                 } else if(player_two_win) {
+                    name_text_size = 50.0;
                     
-                    if(player_two_name.length < 6) {
-                        textSize(50);
-                        
-                    } else {
-                        textSize(50 - 2.5*player_two_name.length);
+                    while(textWidth(player_two_name) >= 200) {
+                        name_text_size -= 0.5;
+                        textSize(name_text_size);
                         
                     }
                     
@@ -3626,8 +3606,6 @@ var end_game_screen = function() {
         rect(0, 20, 400, 380);
         
     }
-    
-    
 };
 
 var guide_screen = function() {
