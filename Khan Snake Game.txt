@@ -6,10 +6,17 @@ noCursor();
 var key_pressed = false;
 var pressed_key = 39;
 var paused = false;
+var shift_held = false;
+var player_one_key_pressed = false;
+var player_two_key_pressed = false;
 keyPressed = function() {
     key_pressed = true;
     pressed_key = keyCode;
     
+    if(keyCode === 16) {
+        shift_held = true;
+        
+    }
     if(keyCode === 32) {
         if(!paused) {
             paused = true;
@@ -21,10 +28,23 @@ keyPressed = function() {
         
     }
     
+    if(keyCode === 87 || keyCode === 83) {
+        player_one_key_pressed = true;
+        
+    }
+    if(keyCode === 38 || keyCode === 40) {
+        player_two_key_pressed = true;
+        
+    }
 };
 
 keyReleased = function() {
     key_pressed = false;
+    
+    if(keyCode === 16) {
+        shift_held = false;
+        
+    }
     
 };
 
@@ -66,11 +86,10 @@ var guide = false; //false
 var back = false; //false
 var over_back = false;
 var difficulty = "Normal";
-var wall_collisions = false;
+var wall_collisions = false; //false
 var player1_colour = "White";
 var player2_colour = "Black";
-var delay_timer = millis();
-//var button_timer = 0; //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
+var delay_timer = millis(); //Need button timer on player 1 red, orange, and yellow so that they aren't immediately clicked when settings button is clicked
 
 //One player
 var player1_snake_stopped = true;
@@ -79,6 +98,11 @@ var player1_snake_stopped = true;
 var play_again = false;
 var go_home = false;
 var initials_pressed = false;
+
+//Enter names
+var continue_pressed = false;
+var enter_player_one_name = false;
+var enter_player_two_name = false;
 
 Button.prototype.draw = function () {
     
@@ -89,7 +113,7 @@ Button.prototype.draw = function () {
         rect(this.XPosition, this.YPosition, this.Width, this.Height);
         
         if (mouseIsPressed) {
-            if(this.Text !== "Back" && this.Text !== "Initials") {
+            if(this.Text !== "Back" && this.Text !== "Initials" && this.Text !== "Player one name" && this.Text !== "Player two name") {
                 
                 fill(this.R2 - 32, this.G2 - 32, this.B2 - 32);
                 
@@ -196,6 +220,15 @@ Button.prototype.draw = function () {
             } else if(button_text === "Initials") {
                 initials_pressed = true;
                 
+            } else if(button_text === "Continue") {
+                continue_pressed = true;
+                
+            } else if(button_text === "Player one name"){
+                enter_player_one_name = true;
+                
+            } else if(button_text === "Player two name") {
+                enter_player_two_name = true;
+                
             }
         }
         
@@ -216,17 +249,17 @@ Button.prototype.draw = function () {
 
 //Snake Segments
 {
-var side = "Right";
-var P2_side = "Right";
 var rotation = 0;
 var P2_rotation = 0;
 var eyes = true;
 var P2_eyes = true;
+var drawing_second_head = false; //Kind of cheating
 
-var Head = function(position, colour, draw_eyes) {
+var Head = function(position, colour, draw_eyes, side) {
     this.position = position;
     this.colour = colour;
     this.draw_eyes = draw_eyes;
+    this.side = side;
     
 };
 
@@ -234,22 +267,43 @@ Head.prototype.draw = function() {
     var x_position = 0;
     var y_position = 0;
     
-    if(rotation === 90) {
-        x_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
-        y_position = -((this.position - 1) % 40) * 10 - 5;
+    if(drawing_second_head) {
+        rotate(P2_rotation);
         
-    } else if (rotation === -90) {
-        x_position = -Math.ceil(this.position / 40) * 10 + 5;
-        y_position = ((this.position - 1) % 40) * 10 + 5;
+        if(P2_rotation === 90) {
+            x_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+            y_position = -((this.position - 1) % 40) * 10 - 5;
+            
+        } else if (P2_rotation === -90) {
+            x_position = -Math.ceil(this.position / 40) * 10 + 5;
+            y_position = ((this.position - 1) % 40) * 10 + 5;
+            
+            
+        } else {
+            x_position = ((this.position - 1) % 40) * 10 + 5;
+            y_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
         
+        }
         
     } else {
-        x_position = ((this.position - 1) % 40) * 10 + 5;
-        y_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
-    
+        rotate(rotation);
+        
+        if(rotation === 90) {
+            x_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+            y_position = -((this.position - 1) % 40) * 10 - 5;
+            
+        } else if (rotation === -90) {
+            x_position = -Math.ceil(this.position / 40) * 10 + 5;
+            y_position = ((this.position - 1) % 40) * 10 + 5;
+            
+            
+        } else {
+            x_position = ((this.position - 1) % 40) * 10 + 5;
+            y_position = Math.ceil(this.position / 40 - 1) * 10 + 5;
+        
+        }
+        
     }
-    
-    rotate(rotation);
     
     if(this.colour === "Black") {
         fill(0, 0, 0); //Feature colour = white
@@ -328,7 +382,7 @@ Head.prototype.draw = function() {
         
     }
     
-    if(side === "Right") {
+    if(this.side === "Right") {
         
         if(this.draw_eyes) {
             
@@ -369,7 +423,13 @@ Head.prototype.draw = function() {
         
     }
     
-    rotate(-rotation);
+    if(drawing_second_head) {
+        rotate(-P2_rotation);
+        
+    } else {
+        rotate(-rotation);
+        
+    }
     
 };
     
@@ -467,7 +527,7 @@ BodySegment.prototype.draw = function() {
     var Settings_button = new Button (18, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Settings", 18, 10, 25);
     var Instructions_button = new Button (293, 260, 84, 38, 98, 107, 112, 110, 119, 124, "Guide", 18, 18 , 25);
     var home_snake_segments = [];
-    home_snake_segments.push(new Head(314, "White", true));
+    home_snake_segments.push(new Head(314, "White", true,  "Right"));
     for(var i = 1; i < 28; i++) {
         
         home_snake_segments.push(new BodySegment(314 - i, "White"));
@@ -534,7 +594,7 @@ BodySegment.prototype.draw = function() {
 {
  var score = 0;
  var one_player_snake = [];
- one_player_snake.push(new Head(820, "White", true));
+ one_player_snake.push(new Head(820, "White", true,  "Right"));
  one_player_snake.push(new BodySegment(819, "White"));
  one_player_snake.push(new BodySegment(818, "White"));
  var one_player_crash = false;
@@ -556,20 +616,70 @@ BodySegment.prototype.draw = function() {
  var old_tail_position = 818;
  var add_length = false;
  var perfect_game = false;
+ var add_code = true;
  
 }
 //Two player variables
 {
 var player_one_name = "Player one";
 var player_two_name = "Player two";
+var enter_names = false;
+var names_entered = false;
 var two_player_snake1 = [];
-two_player_snake1.push(new Head(812, player1_colour, true));
+two_player_snake1.push(new Head(812, player1_colour, true,  "Right"));
 two_player_snake1.push(new BodySegment(811, player1_colour));
 two_player_snake1.push(new BodySegment(810, player1_colour));
 var two_player_snake2 = [];
-two_player_snake2.push(new Head(829, player2_colour, true));
+two_player_snake2.push(new Head(829, player2_colour, true,  "Left"));
 two_player_snake2.push(new BodySegment(830, player2_colour));
 two_player_snake2.push(new BodySegment(831, player2_colour));
+var before_start = true;
+var two_player_available_positions = [];
+var two_player_old_positions = [];
+for(var i = 81; i < 1601; i++) {
+    
+    if(i !== 812 && i !== 811 && i !== 810 && i !== 829 && i !== 830 && i !== 831) {
+        
+        two_player_available_positions.push(i);
+        
+    }
+
+}
+var snake_one_add_code = true;
+var snake_two_add_code = true;
+var snake_two_key_codes = [];
+var snake_two_left = true;
+var snake_two_up = false;
+var snake_two_right = false;
+var snake_two_down = false;
+var snake_one_old_tail_position = 810;
+var snake_two_old_tail_position = 831;
+var two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
+var two_player_food = new BodySegment(two_player_available_positions[two_player_random_number], "Food");
+var snake_one_eat = false;
+var snake_two_eat = false;
+var snake_one_add_length = false;
+var snake_two_add_length = false;
+var snake_one_crash = false;
+var snake_two_crash = false;
+var both_crash = false;
+var wall_crash = false;
+var head_on_top = 0;
+    
+}
+//Enter names variables
+{
+    var continue_button = new Button (152, 280, 96, 34, 78, 87, 92, 90, 99, 104, "Continue", 21, 6, 24);
+    var player_one_name_button = new Button (92, 161, 224, 34, 255, 255, 255, 255, 255, 255, "Player one name", 0, 47, 29);
+    var player_two_name_button = new Button (92, 234, 224, 34, 255, 255, 255, 255, 255, 255, "Player two name", 0, 47, 29);
+    var player_one_name_text = "";
+    var player_two_name_text = "";
+    var old_name = "";
+    var player_one_Is = 0;
+    var player_two_Is = 0;
+    var player_one_capitals = 0;
+    var player_two_capitals = 0;
+    var backspace = false;
     
 }
 //End game variables
@@ -625,53 +735,111 @@ var update_snake = function(snake, top_row) {
     var old_head = snake[0].position;
     update_timer = millis();
     
-    if(key_codes[0] === 37 && !right) {
-        left = true;
-        up = false;
-        right = false;
-        down = false;
-        side = "Left";
-        rotation = 0;
+    if(snake !== two_player_snake2) {
         
-    } else if (key_codes[0] === 38 && !down) {
-        if(right) {
-            rotation = -90;
+        if((key_codes[0] === 37 || key_codes[0] === 65) && !right) {
+            left = true;
+            up = false;
+            right = false;
+            down = false;
+            home_snake_segments[0].side = "Left";
+            one_player_snake[0].side = "Left";
+            two_player_snake1[0].side = "Left";
+            rotation = 0;
+            
+        } else if ((key_codes[0] === 38 || key_codes[0] === 87) && !down) {
+            if(right) {
+                rotation = -90;
+                
+            }
+            if(left) {
+                rotation = 90;
+                
+            }
+            up = true;
+            left = false;
+            right = false;
+            down = false;
+            
+        } else if ((key_codes[0] === 39 || key_codes[0] === 68) && !left) {
+            right = true;
+            left = false;
+            up = false;
+            down = false;
+            home_snake_segments[0].side = "Right";
+            one_player_snake[0].side = "Right";
+            two_player_snake1[0].side = "Right";
+            rotation = 0;
+            
+        } else if ((key_codes[0] === 40 || key_codes[0] === 83) && !up) {
+            if(right) {
+                rotation = 90;
+                
+            }
+            if(left) {
+                rotation = -90;
+                
+            }
+            down = true;
+            left = false;
+            up = false;
+            right = false;
             
         }
-        if(left) {
-            rotation = 90;
-            
-        }
-        up = true;
-        left = false;
-        right = false;
-        down = false;
         
-    } else if (key_codes[0] === 39 && !left) {
-        right = true;
-        left = false;
-        up = false;
-        down = false;
-        side = "Right";
-        rotation = 0;
+        key_codes.shift();
+    
+    } else {
         
-    } else if (key_codes[0] === 40 && !up) {
-        if(right) {
-            rotation = 90;
+        if(snake_two_key_codes[0] === 37 && !snake_two_right) {
+            snake_two_left = true;
+            snake_two_up = false;
+            snake_two_right = false;
+            snake_two_down = false;
+            two_player_snake2[0].side = "Left";
+            P2_rotation = 0;
+            
+        } else if (snake_two_key_codes[0] === 38 && !snake_two_down) {
+            if(snake_two_right) {
+                P2_rotation = -90;
+                
+            }
+            if(snake_two_left) {
+                P2_rotation = 90;
+                
+            }
+            snake_two_up = true;
+            snake_two_left = false;
+            snake_two_right = false;
+            snake_two_down = false;
+            
+        } else if (snake_two_key_codes[0] === 39 && !snake_two_left) {
+            snake_two_right = true;
+            snake_two_left = false;
+            snake_two_up = false;
+            snake_two_down = false;
+            two_player_snake2[0].side = "Right";
+            P2_rotation = 0;
+            
+        } else if (snake_two_key_codes[0] === 40 && !snake_two_up) {
+            if(snake_two_right) {
+                P2_rotation = 90;
+                
+            }
+            if(snake_two_left) {
+                P2_rotation = -90;
+                
+            }
+            snake_two_down = true;
+            snake_two_left = false;
+            snake_two_up = false;
+            snake_two_right = false;
             
         }
-        if(left) {
-            rotation = -90;
-            
-        }
-        down = true;
-        left = false;
-        up = false;
-        right = false;
+        
+        snake_two_key_codes.shift();
         
     }
-    
-    key_codes.shift();
     
     for(var i = snake.length - 1; i > 0; i--) {
         
@@ -679,31 +847,51 @@ var update_snake = function(snake, top_row) {
         
     }
     
-    if(right) {
+    if(snake !== two_player_snake2) {
+        
+        if(right) {
+           
+           snake[0].position++;
+            
+        } else if(down) {
+            
+            snake[0].position += 40;
+            
+        } else if(left) {
+            
+            snake[0].position--;
+            
+        } else if(up) {
+            
+            snake[0].position -= 40;
+            
+        }
+        
+    } else {
+        
+        if(snake_two_right) {
        
-       snake[0].position++;
-        
-    } else if(down) {
-        
-        snake[0].position += 40;
-        
-    } else if(left) {
-        
-        snake[0].position--;
-        
-    } else if(up) {
-        
-        snake[0].position -= 40;
+           snake[0].position++;
+            
+        } else if(snake_two_down) {
+            
+            snake[0].position += 40;
+            
+        } else if(snake_two_left) {
+            
+            snake[0].position--;
+            
+        } else if(snake_two_up) {
+            
+            snake[0].position -= 40;
+            
+        }
         
     }
     
     if(old_head % 40 === 0 && snake[0].position % 40 === 1) {
         
         snake[0].position -= 40;
-        
-        //Delete
-        timed_time = millis() - test_timer;
-        test_timer = millis();
         
     }
     if(old_head % 40 === 1 && snake[0].position % 40 === 0) {
@@ -852,7 +1040,7 @@ var type_home_crash_message = function() {
 var reset_one_player_snake = function() {
     score = 0;
     one_player_snake = [];
-    one_player_snake.push(new Head(820, "White", true));
+    one_player_snake.push(new Head(820, "White", true,  "Right"));
     one_player_snake.push(new BodySegment(819, "White"));
     one_player_snake.push(new BodySegment(818, "White"));
     one_player_crash = false;
@@ -876,7 +1064,7 @@ var reset_one_player_snake = function() {
     perfect_game = false;
     player1_snake_stopped = true;
     rotation = 0;
-    side = "Right";
+    one_player_snake[0].side = "Right";
     right = true;
     left = false;
     up = false;
@@ -896,7 +1084,7 @@ var reset_home_snake = function() {
     
     key_codes = [39];
     home_snake_segments = [];
-    home_snake_segments.push(new Head(314, player1_colour, true));
+    home_snake_segments.push(new Head(314, player1_colour, true,  "Right"));
     for(var i = 1; i < 28; i++) {
         
         home_snake_segments.push(new BodySegment(314 - i, player1_colour));
@@ -905,7 +1093,7 @@ var reset_home_snake = function() {
     draw_easter_food = false;
     right = true;
     rotation = 0;
-    side = "Right";
+    home_snake_segments[0].side = "Right";
     left = false;
     easter_eat = false;
     home_crash = false;
@@ -1094,6 +1282,331 @@ var add_high_score = function() {
             
         }
     }
+};
+
+var add_name_letter = function(name) {
+    var added_letter = '';
+    
+    if(pressed_key === 48) {
+        
+        added_letter = '0';
+        
+    }
+    if(pressed_key === 49) {
+        added_letter = '1';
+        
+    }
+    if(pressed_key === 50) {
+        added_letter = '2';
+        
+    }
+    if(pressed_key === 51) {
+        added_letter = '3';
+        
+    }
+    if(pressed_key === 52) {
+        added_letter = '4';
+        
+    }
+    if(pressed_key === 53) {
+        added_letter = '5';
+        
+    }
+    if(pressed_key === 54) {
+        added_letter = '6';
+        
+    }
+    if(pressed_key === 55) {
+        added_letter = '7';
+        
+    }
+    if(pressed_key === 56) {
+        added_letter = '8';
+        
+    }
+    if(pressed_key === 57) {
+        added_letter = '9';
+        
+    }
+    if(pressed_key === 65) {
+        
+        if(shift_held) {
+            added_letter = 'A';
+            
+        } else {
+            added_letter = 'a';
+            
+        }
+    }
+    if(pressed_key === 66) {
+        
+        if(shift_held) {
+            added_letter = 'B';
+            
+        } else {
+            added_letter = 'b';
+            
+        }
+    }
+    if(pressed_key === 67) {
+        
+        if(shift_held) {
+            added_letter = 'C';
+            
+        } else {
+            added_letter = 'c';
+            
+        }
+    }
+    if(pressed_key === 68) {
+        
+        if(shift_held) {
+            added_letter = 'D';
+            
+        } else {
+            added_letter = 'd';
+            
+        }
+    }
+    if(pressed_key === 69) {
+        
+        if(shift_held) {
+            added_letter = 'E';
+            
+        } else {
+            added_letter = 'e';
+            
+        }
+    }
+    if(pressed_key === 70) {
+        
+        if(shift_held) {
+            added_letter = 'F';
+            
+        } else {
+            added_letter = 'f';
+            
+        }
+    }
+    if(pressed_key === 71) {
+        
+        if(shift_held) {
+            added_letter = 'G';
+            
+        } else {
+            added_letter = 'g';
+            
+        }
+    }
+    if(pressed_key === 72) {
+        
+        if(shift_held) {
+            added_letter = 'H';
+            
+        } else {
+            added_letter = 'h';
+            
+        }
+    }
+    if(pressed_key === 73) {
+        
+        if(shift_held) {
+            added_letter = 'I';
+            
+        } else {
+            added_letter = 'i';
+            
+        }
+    }
+    if(pressed_key === 74) {
+        
+        if(shift_held) {
+            added_letter = 'J';
+            
+        } else {
+            added_letter = 'j';
+            
+        }
+    }
+    if(pressed_key === 75) {
+        
+        if(shift_held) {
+            added_letter = 'K';
+            
+        } else {
+            added_letter = 'k';
+            
+        }
+    }
+    if(pressed_key === 76) {
+        
+        if(shift_held) {
+            added_letter = 'L';
+            
+        } else {
+            added_letter = 'l';
+            
+        }
+    }
+    if(pressed_key === 77) {
+        
+        if(shift_held) {
+            added_letter = 'M';
+            
+        } else {
+            added_letter = 'm';
+            
+        }
+    }
+    if(pressed_key === 78) {
+        
+        if(shift_held) {
+            added_letter = 'N';
+            
+        } else {
+            added_letter = 'n';
+            
+        }
+    }
+    if(pressed_key === 79) {
+        
+        if(shift_held) {
+            added_letter = 'O';
+            
+        } else {
+            added_letter = 'o';
+            
+        }
+    }
+    if(pressed_key === 80) {
+        
+        if(shift_held) {
+            added_letter = 'P';
+            
+        } else {
+            added_letter = 'p';
+            
+        }
+    }
+    if(pressed_key === 81) {
+        
+        if(shift_held) {
+            added_letter = 'Q';
+            
+        } else {
+            added_letter = 'q';
+            
+        }
+    }
+    if(pressed_key === 82) {
+        
+        if(shift_held) {
+            added_letter = 'R';
+            
+        } else {
+            added_letter = 'r';
+            
+        }
+    }
+    if(pressed_key === 83) {
+        
+        if(shift_held) {
+            added_letter = 'S';
+            
+        } else {
+            added_letter = 's';
+            
+        }
+    }
+    if(pressed_key === 84) {
+        
+        if(shift_held) {
+            added_letter = 'T';
+            
+        } else {
+            added_letter = 't';
+            
+        }
+    }
+    if(pressed_key === 85) {
+        
+        if(shift_held) {
+            added_letter = 'U';
+            
+        } else {
+            added_letter = 'u';
+            
+        }
+    }
+    if(pressed_key === 86) {
+        
+        if(shift_held) {
+            added_letter = 'V';
+            
+        } else {
+            added_letter = 'v';
+            
+        }
+    }
+    if(pressed_key === 87) {
+        
+        if(shift_held) {
+            added_letter = 'W';
+            
+        } else {
+            added_letter = 'w';
+            
+        }
+    }
+    if(pressed_key === 88) {
+        
+        if(shift_held) {
+            added_letter = 'X';
+            
+        } else {
+            added_letter = 'x';
+            
+        }
+    }
+    if(pressed_key === 89) {
+        
+        if(shift_held) {
+            added_letter = 'Y';
+            
+        } else {
+            added_letter = 'y';
+            
+        }
+    }
+    if(pressed_key === 90) {
+        
+        if(shift_held) {
+            added_letter = 'Z';
+            
+        } else {
+            added_letter = 'z';
+            
+        }
+    }
+    if(pressed_key === 8) {
+        backspace = true;
+        
+        
+    }
+    if(pressed_key === 10) {
+        enter_pressed = true;
+        
+    }
+    
+    if(name === player_one_name_text) {
+        player_one_name_text += added_letter;
+        
+    } else {
+        player_two_name_text += added_letter;
+        
+    }
+    
+    key_pressed = false;
 };
 }
 
@@ -1958,7 +2471,7 @@ var one_player_screen = function() {
         
     }
     
-    var add_code = true;
+    add_code = true;
     for(var i = 0; i < key_codes.length; i++) {
         
         if(key_codes[i] === pressed_key) {
@@ -1973,7 +2486,7 @@ var one_player_screen = function() {
         
     }
     
-    if(player1_snake_stopped && (pressed_key === 38 || pressed_key === 39 || pressed_key === 40) && !one_player_crash) {
+    if(player1_snake_stopped && (pressed_key === 38 || pressed_key === 39 || pressed_key === 40 || pressed_key === 87 || pressed_key === 68 || pressed_key === 83) && !one_player_crash) {
         player1_snake_stopped = false;
         update_timer = millis();
         key_codes.shift();
@@ -1983,7 +2496,7 @@ var one_player_screen = function() {
     
     //Update snake position
     if(millis() >= update_timer + speed && !player1_snake_stopped && !one_player_crash) {
-    number = 0;
+        number = 0;
         
         update_snake(one_player_snake, 3);
         
@@ -2073,12 +2586,12 @@ var one_player_screen = function() {
         game_over = true;
         
         if(wall_collisions && pressed_key === 39) {
-            side = "Right";
+            one_player_snake[0].side = "Right";
             rotation = 0;
             
         }
         if(wall_collisions && pressed_key === 37) {
-            side = "Left";
+            one_player_snake[0].side = "Left";
             rotation = 0;
             
         }
@@ -2117,39 +2630,475 @@ var two_player_screen = function() {
     rect(0, 0, 400, 20);
     fill(235, 205, 12);
     textSize(12);
+    textAlign(LEFT);
     text(player_one_name + "'s Length: " + two_player_snake1.length, 5, 15);
     textAlign(RIGHT);
-    text(player_two_name + "'s Length: ", 395, 15);
-    textAlign(LEFT);
+    text(player_two_name + "'s Length: " + two_player_snake2.length, 395, 15);
+    textAlign(CENTER);
     
-    for(var i = two_player_snake1.length - 1; i >= 0; i--) {
+    if(!names_entered) {
+        names_entered = true;
+        enter_names = true;
         
-        /*
-        if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
-            one_player_crash = true;
-            player1_snake_stopped = true;
+    } else {
+        
+        if(before_start) {
+            update_timer = millis();
+            
+            fill(115, 115, 115, 180);
+            rect(50, 60, 300, 62, 15);
+            
+            fill(0, 0, 0);
+            textSize(30);
+            text("Press space to start", 200, 100);
+            
+            if(pressed_key === 32) {
+                before_start = false;
+                paused = false;
+                
+            }
+        }
+    }
+    
+    if(paused) {
+        update_timer = millis();
+        fill(255, 255, 255);
+        textAlign(CENTER);
+        text("PAUSED", 200, 15);
+        textAlign(LEFT);
+        
+    }
+    
+    
+    two_player_old_positions = two_player_available_positions;
+    two_player_available_positions = [];
+    for(var i = 0; i < two_player_old_positions.length; i++) {
+        
+        if(two_player_old_positions[i] !== two_player_snake1[0].position && two_player_old_positions[i] !== two_player_snake2[0].position) {
+            
+            two_player_available_positions.push(two_player_old_positions[i]);
             
         }
-        */
+        
+    }
+    
+    snake_one_add_code = true;
+    snake_two_add_code = true;
+    for(var i = 0; i < key_codes.length; i++) {
+        
+        if(key_codes[i] === pressed_key) {
+            snake_one_add_code = false;
+            
+        }
+    }
+    for(var i = 0; i < snake_two_key_codes.length; i++) {
+        
+        if(snake_two_key_codes[i] === pressed_key) {
+            snake_two_add_code = false;
+            
+        }
+    }
+    
+    if(!before_start && snake_one_add_code && (pressed_key === 65 || pressed_key === 87 || pressed_key === 68 || pressed_key === 83)) {
+        
+        key_codes.push(pressed_key);
+        
+    }
+    if(!before_start && snake_two_add_code && (pressed_key === 37 || pressed_key === 38 || pressed_key === 39 || pressed_key === 40)) {
+        
+        snake_two_key_codes.push(pressed_key);
+        
+    }
+    
+    //Update snake position
+    if(millis() >= update_timer + speed) {
+        if(!player_one_key_pressed) {
+            key_codes.push(68);
+            
+        }
+        if(!player_two_key_pressed) {
+            snake_two_key_codes.push(37);
+            
+        }
+    
+        snake_one_old_tail_position = two_player_snake1[two_player_snake1.length - 1].position;
+        snake_two_old_tail_position = two_player_snake2[two_player_snake2.length - 1].position;
+        
+        if(!snake_one_crash  && !both_crash) {
+            update_snake(two_player_snake1, 3);
+            
+        }
+        if(!snake_two_crash  && !both_crash){
+            update_snake(two_player_snake2, 3);
+            
+        }
+        
+        if(snake_one_add_length) {
+            snake_one_add_length = false;
+            two_player_snake1.push(new BodySegment(snake_one_old_tail_position, player1_colour));
+            
+        } else {
+            
+            two_player_available_positions.push(snake_one_old_tail_position);
+            
+        }
+        if(snake_two_add_length) {
+            snake_two_add_length = false;
+            two_player_snake2.push(new BodySegment(snake_two_old_tail_position, player2_colour));
+            
+        } else {
+            
+            two_player_available_positions.push(snake_two_old_tail_position);
+            
+        }
+        
+    }
+    
+    //Crashing
+    if(two_player_snake1[0].position === two_player_snake2[0].position) {
+        both_crash = true;
+        two_player_snake1[0].draw_eyes = false;
+        two_player_snake2[0].draw_eyes = false;
+        
+        if(two_player_snake1.length > two_player_snake2.length) {
+            head_on_top = 1;
+            
+        } else if(two_player_snake2.length > two_player_snake1.length) {
+            head_on_top = 2;
+            
+        } else {
+            
+            if(head_on_top ===0) {
+                head_on_top = round(random(1, 2));
+                
+            }
+        }
+    }
+    
+    for(var i = two_player_snake1.length - 1; i > 0; i--) {
+        
+        if(two_player_snake1[i].position === two_player_snake1[0].position) {
+            snake_one_crash = true;
+            two_player_snake1[0].draw_eyes = false;
+            
+        }
+        
+        if(two_player_snake2[0].position === two_player_snake1[i].position) {
+            both_crash = true;
+            two_player_snake2[0].draw_eyes = false;
+            
+        }
         
         two_player_snake1[i].draw();
-        two_player_snake2[i].draw();
         
     }
     
-    for(var i = two_player_snake2.length - 1; i >= 0; i--) {
+    for(var i = two_player_snake2.length - 1; i > 0; i--) {
         
-        /*
-        if(i !== 0 && one_player_snake[i].position === one_player_snake[0].position) {
-            one_player_crash = true;
-            player1_snake_stopped = true;
+        if(two_player_snake2[i].position === two_player_snake2[0].position) {
+            snake_two_crash = true;
+            two_player_snake2[0].draw_eyes = false;
             
         }
-        */
+        
+        if(two_player_snake1[0].position === two_player_snake2[i].position) {
+            both_crash = true;
+            two_player_snake1[0].draw_eyes = false;
+            
+        }
+        
+        drawing_second_head = true;
         
         two_player_snake2[i].draw();
         
+        drawing_second_head = false;
+        
     }
+    
+    if(head_on_top === 2) {
+        two_player_snake1[0].draw();
+        drawing_second_head = true;
+        two_player_snake2[0].draw();
+        drawing_second_head = false;
+        
+    } else {
+        drawing_second_head = true;
+        two_player_snake2[0].draw();
+        drawing_second_head = false;
+        two_player_snake1[0].draw();
+            
+    }
+    
+    
+    //Wall crashing
+    if(wall_collisions && ((two_player_snake1[0].position % 40 === 1) && key_codes[0] === 65 || (two_player_snake1[0].position % 40 === 0) && key_codes[0] === 68 || (Math.ceil(two_player_snake1[0].position / 40) === 3) && key_codes[0] === 87 || (Math.ceil(two_player_snake1[0].position / 40) === 40) && key_codes[0] === 83)) {
+        snake_one_crash = true;
+        two_player_snake1[0].draw_eyes = false;
+        wall_crash = true;
+        
+    }
+    
+    if(wall_collisions && ((two_player_snake2[0].position % 40 === 1) && snake_two_key_codes[0] === 37 || (two_player_snake2[0].position % 40 === 0) && snake_two_key_codes[0] === 39 || (Math.ceil(two_player_snake2[0].position / 40) === 3) && snake_two_key_codes[0] === 38 || (Math.ceil(two_player_snake2[0].position / 40) === 40) && snake_two_key_codes[0] === 40)) {
+        snake_two_crash = true;
+        two_player_snake2[0].draw_eyes = false;
+        wall_crash = true;
+        
+    }
+    
+    if(wall_crash && snake_one_crash) {
+        
+        if(pressed_key === 68) {
+            two_player_snake1[0].side = "Right";
+            rotation = 0;
+            
+        }
+        if(pressed_key === 65) {
+            two_player_snake1[0].side = "Left";
+            rotation = 0;
+            
+        }
+        if(pressed_key === 87) {
+            
+            if(right) {
+                rotation = -90;
+                
+            } else if(left) {
+                rotation = 90;
+                
+            }
+            
+        }
+        if(pressed_key === 83) {
+            
+            if(right) {
+                rotation = 90;
+                
+            } else if(left) {
+                rotation = -90;
+                
+            }
+            
+        }
+        
+    }
+    
+    if(wall_crash && snake_two_crash) {
+        
+        if(pressed_key === 39) {
+            two_player_snake2[0].side = "Right";
+            P2_rotation = 0;
+            
+        }
+        if(pressed_key === 37) {
+            two_player_snake2[0].side = "Left";
+            P2_rotation = 0;
+            
+        }
+        if(pressed_key === 38) {
+            
+            if(snake_two_right) {
+                P2_rotation = -90;
+                
+            } else if(snake_two_left) {
+                P2_rotation = 90;
+                
+            }
+            
+        }
+        if(pressed_key === 40) {
+            
+            if(snake_two_right) {
+                P2_rotation = 90;
+                
+            } else if(snake_two_left) {
+                P2_rotation = -90;
+                
+            }
+            
+        }
+        
+    }
+    
+    //Eat
+    if(two_player_snake1[0].position === two_player_food.position) {
+        two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
+        snake_one_eat = true;
+        
+    }
+    if(two_player_snake2[0].position === two_player_food.position) {
+        two_player_random_number = floor(random(81, two_player_available_positions.length + 0.9));
+        snake_two_eat = true;
+        
+    }
+    if(snake_one_eat) {
+        snake_one_eat = false;
+        snake_one_add_length = true;
+        two_player_food.position = two_player_available_positions[two_player_random_number];
+        
+    }
+    if(snake_two_eat) {
+        snake_two_eat = false;
+        snake_two_add_length = true;
+        two_player_food.position = two_player_available_positions[two_player_random_number];
+        
+    }
+    
+    /*
+    //See available spaces
+    for(var i = 0; i < two_player_available_positions.length; i++) {
+        var x_position = ((two_player_available_positions[i] - 1) % 40) * 10 + 5;
+        var y_position = Math.ceil(two_player_available_positions[i] / 40 - 1) * 10 + 5;
+      
+        fill(110, 86, 14);
+      
+        ellipse (x_position, y_position , 10, 10);
+        
+    } */
+    
+    if(!before_start) {
+        
+        two_player_food.draw();
+        
+    }
+    
+    textAlign(LEFT);
+};
+
+var enter_names_screen = function() {
+    var cursor_time = millis();
+    fill(85, 85, 85, 200);
+    rect(0, 0, 400, 400);
+    fill(180, 180, 180);
+    rect(50, 80, 300, 240, 20);
+    fill(0, 0, 0);
+    textAlign(CENTER);
+    textSize(30);
+    text("Enter your names", 200, 115);
+    
+    textSize(20);
+    text("Player one", 200, 155);
+    text("Player two", 200, 228);
+    
+    textAlign(LEFT);
+    
+    if(mouse_released) {
+        enter_pressed = false;
+        enter_player_one_name = false;
+        enter_player_two_name = false;
+        
+    }
+    
+    player_one_name_button.draw();
+    player_two_name_button.draw();
+    continue_button.draw();
+    
+    if(key_pressed) {
+        
+        if(enter_player_one_name && (player_one_name_text.length < 15 || pressed_key === 8)) {
+            add_name_letter(player_one_name_text);
+            
+        }
+        if(enter_player_two_name && (player_two_name_text.length < 15 || pressed_key === 8)) {
+            
+            add_name_letter(player_two_name_text);
+            
+        }
+        
+    }
+    
+    
+    if(backspace) {
+        backspace = false;
+        
+        if(enter_player_one_name) {
+            old_name = player_one_name_text;
+            player_one_name_text = "";
+            
+            for(var i = 0; i < old_name.length - 1; i++) {
+                player_one_name_text += old_name[i];
+                
+            }
+            
+        } else if (enter_player_two_name) {
+            old_name = player_two_name_text;
+            player_two_name_text = "";
+            
+            for(var i = 0; i < old_name.length - 1; i++) {
+                player_two_name_text += old_name[i];
+                
+            }
+            
+        }
+    }
+    
+    player_one_Is = 0;
+    player_one_capitals = 0;
+    for(var i = 0; i < player_one_name_text.length; i++) {
+        
+        if(player_one_name_text[i] === player_one_name_text[i].toUpperCase()) {
+            player_one_capitals++;
+            
+        }
+        
+        if(player_one_name_text[i] === "I") {
+            player_one_Is++;
+            
+        }
+        
+    }
+    player_two_Is = 0;
+    player_two_capitals = 0;
+    for(var i = 0; i < player_two_name_text.length; i++) {
+        
+        if(player_two_name_text[i] === player_two_name_text[i].toUpperCase()) {
+            player_two_capitals++;
+            
+        }
+        
+        if(player_two_name_text[i] === "I") {
+            player_two_Is++;
+            
+        }
+        
+    }
+    
+    if(enter_player_one_name && !enter_pressed && (cursor_time % 1000) < 500) {
+        text("|", 200 + (player_one_capitals * 7.5) + ((player_one_name_text.length - player_one_capitals) * 4.5) - (5 * player_one_Is), 184);
+        
+    }
+    if(enter_player_two_name && !enter_pressed && (cursor_time % 1000) < 500) {
+        text("|", 200 + (player_two_capitals * 7.5) + ((player_two_name_text.length - player_two_capitals) * 4.5) - (5 * player_two_Is), 257);
+        
+    }
+    
+    textAlign(CENTER);
+    text(player_one_name_text, 200, 187);
+    text(player_two_name_text, 200, 260);
+    textAlign(LEFT);
+
+    if(continue_pressed) {
+        
+        if(player_one_name_text !== "") {
+            player_one_name = player_one_name_text;
+            
+        } else {
+            player_one_name = "Player one";
+            
+        }
+        
+        if(player_two_name_text !== "") {
+            player_two_name = player_two_name_text;
+            
+        } else {
+            player_two_name = "Player two";
+            
+        }
+        
+        continue_pressed = false;
+        enter_names = false;
+        
+    }
+    
     
 };
 
@@ -2182,9 +3131,9 @@ var end_game_screen = function() {
         }
         
         if(score <= high_scores[9]) {
-            text("You need at least " , 200, 192);
+            text("You need at least", 200, 192);
             text((high_scores[9] - score + 1) + " more point" + point_plural, 200, 218);
-            text(" for a new highscore", 200, 244);
+            text("for a new highscore", 200, 244);
             
         } else {
             var cursor_time = millis();
@@ -2313,6 +3262,11 @@ var draw = function() {
     if(game_over) {
         
         end_game_screen();
+        
+    }
+    if(false) {
+    //...enter_names....
+        enter_names_screen();
         
     }
     mouse_released = false;
